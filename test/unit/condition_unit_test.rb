@@ -1,10 +1,10 @@
 require 'test_helper'
 
 class ConditionUnitTest < Minitest::Test
-  include Liquid
+  include Solid
 
   def setup
-    @context = Liquid::Context.new
+    @context = Solid::Context.new
   end
 
   def test_basic_condition
@@ -73,7 +73,7 @@ class ConditionUnitTest < Minitest::Test
   end
 
   def test_contains_works_on_arrays
-    @context = Liquid::Context.new
+    @context = Solid::Context.new
     @context['array'] = [1, 2, 3, 4, 5]
     array_expr = VariableLookup.new("array")
 
@@ -88,7 +88,7 @@ class ConditionUnitTest < Minitest::Test
   end
 
   def test_contains_returns_false_for_nil_operands
-    @context = Liquid::Context.new
+    @context = Solid::Context.new
     assert_evaluates_false VariableLookup.new('not_assigned'), 'contains', '0'
     assert_evaluates_false 0, 'contains', VariableLookup.new('not_assigned')
   end
@@ -140,8 +140,8 @@ class ConditionUnitTest < Minitest::Test
   end
 
   def test_left_or_right_may_contain_operators
-    @context = Liquid::Context.new
-    @context['one'] = @context['another'] = "gnomeslab-and-or-liquid"
+    @context = Solid::Context.new
+    @context['one'] = @context['another'] = "gnomeslab-and-or-solid"
 
     assert_evaluates_true VariableLookup.new("one"), '==', VariableLookup.new("another")
   end
@@ -159,7 +159,7 @@ class ConditionUnitTest < Minitest::Test
   end
 
   def assert_evaluates_argument_error(left, op, right)
-    assert_raises(Liquid::ArgumentError) do
+    assert_raises(Solid::ArgumentError) do
       Condition.new(left, op, right).evaluate(@context)
     end
   end

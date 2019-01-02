@@ -4,20 +4,15 @@ ENV["MT_NO_EXPECTATIONS"] = "1"
 require 'minitest/autorun'
 
 $LOAD_PATH.unshift(File.join(File.expand_path(__dir__), '..', 'lib'))
-require 'liquid.rb'
-require 'liquid/profiler'
+require 'solid.rb'
+require 'solid/profiler'
 
 mode = :strict
 if env_mode = ENV['LIQUID_PARSER_MODE']
   puts "-- #{env_mode.upcase} ERROR MODE"
   mode = env_mode.to_sym
 end
-Liquid::Template.error_mode = mode
-
-if ENV['LIQUID-C'] == '1'
-  puts "-- LIQUID C"
-  require 'liquid/c'
-end
+Solid::Template.error_mode = mode
 
 if Minitest.const_defined?('Test')
   # We're on Minitest 5+. Nothing to do here.
@@ -34,7 +29,7 @@ module Minitest
   end
 
   module Assertions
-    include Liquid
+    include Solid
 
     def assert_template_result(expected, template, assigns = {}, message = nil)
       assert_equal expected, Template.parse(template).render!(assigns), message
@@ -47,63 +42,63 @@ module Minitest
     end
 
     def assert_match_syntax_error(match, template, assigns = {})
-      exception = assert_raises(Liquid::SyntaxError) do
+      exception = assert_raises(Solid::SyntaxError) do
         Template.parse(template).render(assigns)
       end
       assert_match match, exception.message
     end
 
     def with_global_filter(*globals)
-      original_global_strainer = Liquid::Strainer.class_variable_get(:@@global_strainer)
-      Liquid::Strainer.class_variable_set(:@@global_strainer, Class.new(Liquid::Strainer) do
+      original_global_strainer = Solid::Strainer.class_variable_get(:@@global_strainer)
+      Solid::Strainer.class_variable_set(:@@global_strainer, Class.new(Solid::Strainer) do
         @filter_methods = Set.new
       end)
-      Liquid::Strainer.class_variable_get(:@@strainer_class_cache).clear
+      Solid::Strainer.class_variable_get(:@@strainer_class_cache).clear
 
       globals.each do |global|
-        Liquid::Template.register_filter(global)
+        Solid::Template.register_filter(global)
       end
       yield
     ensure
-      Liquid::Strainer.class_variable_get(:@@strainer_class_cache).clear
-      Liquid::Strainer.class_variable_set(:@@global_strainer, original_global_strainer)
+      Solid::Strainer.class_variable_get(:@@strainer_class_cache).clear
+      Solid::Strainer.class_variable_set(:@@global_strainer, original_global_strainer)
     end
 
     def with_taint_mode(mode)
-      old_mode = Liquid::Template.taint_mode
-      Liquid::Template.taint_mode = mode
+      old_mode = Solid::Template.taint_mode
+      Solid::Template.taint_mode = mode
       yield
     ensure
-      Liquid::Template.taint_mode = old_mode
+      Solid::Template.taint_mode = old_mode
     end
 
     def with_error_mode(mode)
-      old_mode = Liquid::Template.error_mode
-      Liquid::Template.error_mode = mode
+      old_mode = Solid::Template.error_mode
+      Solid::Template.error_mode = mode
       yield
     ensure
-      Liquid::Template.error_mode = old_mode
+      Solid::Template.error_mode = old_mode
     end
   end
 end
 
-class ThingWithToLiquid
-  def to_liquid
+class ThingWithToSolid
+  def to_solid
     'foobar'
   end
 end
 
-class ErrorDrop < Liquid::Drop
+class ErrorDrop < Solid::Drop
   def standard_error
-    raise Liquid::StandardError, 'standard error'
+    raise Solid::StandardError, 'standard error'
   end
 
   def argument_error
-    raise Liquid::ArgumentError, 'argument error'
+    raise Solid::ArgumentError, 'argument error'
   end
 
   def syntax_error
-    raise Liquid::SyntaxError, 'syntax error'
+    raise Solid::SyntaxError, 'syntax error'
   end
 
   def runtime_error

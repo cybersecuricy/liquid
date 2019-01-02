@@ -16,7 +16,7 @@ Layout/ClosingParenthesisIndentation:
 # Cop supports --auto-correct.
 Layout/EmptyLineAfterMagicComment:
   Exclude:
-    - 'lib/liquid/version.rb'
+    - 'lib/solid/version.rb'
 
 # Offense count: 1
 # Cop supports --auto-correct.
@@ -49,7 +49,7 @@ Layout/MultilineMethodCallBraceLayout:
 # SupportedStyles: runtime_error, standard_error
 Lint/InheritException:
   Exclude:
-    - 'lib/liquid/interrupts.rb'
+    - 'lib/solid/interrupts.rb'
 
 # Offense count: 1
 Lint/ScriptPermission:
@@ -85,13 +85,13 @@ Metrics/PerceivedComplexity:
 # SupportedStyles: prefer_alias, prefer_alias_method
 Style/Alias:
   Exclude:
-    - 'lib/liquid/drop.rb'
-    - 'lib/liquid/i18n.rb'
-    - 'lib/liquid/profiler/hooks.rb'
-    - 'lib/liquid/standardfilters.rb'
-    - 'lib/liquid/tag.rb'
-    - 'lib/liquid/tags/include.rb'
-    - 'lib/liquid/variable.rb'
+    - 'lib/solid/drop.rb'
+    - 'lib/solid/i18n.rb'
+    - 'lib/solid/profiler/hooks.rb'
+    - 'lib/solid/standardfilters.rb'
+    - 'lib/solid/tag.rb'
+    - 'lib/solid/tags/include.rb'
+    - 'lib/solid/variable.rb'
 
 # Offense count: 1
 # Cop supports --auto-correct.
@@ -99,14 +99,14 @@ Style/Alias:
 # SupportedStyles: assign_to_condition, assign_inside_condition
 Style/ConditionalAssignment:
   Exclude:
-    - 'lib/liquid/errors.rb'
+    - 'lib/solid/errors.rb'
 
 # Offense count: 2
 # Cop supports --auto-correct.
 Style/EmptyCaseCondition:
   Exclude:
-    - 'lib/liquid/block_body.rb'
-    - 'lib/liquid/lexer.rb'
+    - 'lib/solid/block_body.rb'
+    - 'lib/solid/lexer.rb'
 
 # Offense count: 5
 # Cop supports --auto-correct.
@@ -114,9 +114,9 @@ Style/EmptyCaseCondition:
 # SupportedStyles: compact, expanded
 Style/EmptyMethod:
   Exclude:
-    - 'lib/liquid/tag.rb'
-    - 'lib/liquid/tags/comment.rb'
-    - 'lib/liquid/tags/include.rb'
+    - 'lib/solid/tag.rb'
+    - 'lib/solid/tags/comment.rb'
+    - 'lib/solid/tags/include.rb'
     - 'test/integration/tags/include_tag_test.rb'
     - 'test/unit/context_unit_test.rb'
 
@@ -130,17 +130,17 @@ Style/FormatStringToken:
 # Configuration parameters: MinBodyLength.
 Style/GuardClause:
   Exclude:
-    - 'lib/liquid/condition.rb'
-    - 'lib/liquid/lexer.rb'
-    - 'lib/liquid/strainer.rb'
-    - 'lib/liquid/tags/assign.rb'
-    - 'lib/liquid/tags/capture.rb'
-    - 'lib/liquid/tags/case.rb'
-    - 'lib/liquid/tags/for.rb'
-    - 'lib/liquid/tags/include.rb'
-    - 'lib/liquid/tags/raw.rb'
-    - 'lib/liquid/tags/table_row.rb'
-    - 'lib/liquid/variable.rb'
+    - 'lib/solid/condition.rb'
+    - 'lib/solid/lexer.rb'
+    - 'lib/solid/strainer.rb'
+    - 'lib/solid/tags/assign.rb'
+    - 'lib/solid/tags/capture.rb'
+    - 'lib/solid/tags/case.rb'
+    - 'lib/solid/tags/for.rb'
+    - 'lib/solid/tags/include.rb'
+    - 'lib/solid/tags/raw.rb'
+    - 'lib/solid/tags/table_row.rb'
+    - 'lib/solid/variable.rb'
     - 'test/unit/tokenizer_unit_test.rb'
 
 # Offense count: 4
@@ -153,12 +153,12 @@ Style/MethodName:
 # Cop supports --auto-correct.
 Style/MutableConstant:
   Exclude:
-    - 'lib/liquid/expression.rb'
-    - 'lib/liquid/lexer.rb'
-    - 'lib/liquid/standardfilters.rb'
-    - 'lib/liquid/tags/if.rb'
-    - 'lib/liquid/variable_lookup.rb'
-    - 'lib/liquid/version.rb'
+    - 'lib/solid/expression.rb'
+    - 'lib/solid/lexer.rb'
+    - 'lib/solid/standardfilters.rb'
+    - 'lib/solid/tags/if.rb'
+    - 'lib/solid/variable_lookup.rb'
+    - 'lib/solid/version.rb'
 
 # Offense count: 1
 # Cop supports --auto-correct.
@@ -166,7 +166,7 @@ Style/MutableConstant:
 # SupportedStyles: skip_modifier_ifs, always
 Style/Next:
   Exclude:
-    - 'lib/liquid/tags/for.rb'
+    - 'lib/solid/tags/for.rb'
 
 # Offense count: 4
 # Cop supports --auto-correct.
@@ -175,18 +175,18 @@ Style/Next:
 Style/NumericPredicate:
   Exclude:
     - 'spec/**/*'
-    - 'lib/liquid/context.rb'
-    - 'lib/liquid/forloop_drop.rb'
-    - 'lib/liquid/standardfilters.rb'
-    - 'lib/liquid/tablerowloop_drop.rb'
+    - 'lib/solid/context.rb'
+    - 'lib/solid/forloop_drop.rb'
+    - 'lib/solid/standardfilters.rb'
+    - 'lib/solid/tablerowloop_drop.rb'
 
 # Offense count: 14
 # Cop supports --auto-correct.
 # Configuration parameters: PreferredDelimiters.
 Style/PercentLiteralDelimiters:
   Exclude:
-    - 'lib/liquid/tags/if.rb'
-    - 'liquid.gemspec'
+    - 'lib/solid/tags/if.rb'
+    - 'solid.gemspec'
     - 'test/integration/assign_test.rb'
     - 'test/integration/standard_filter_test.rb'
 
@@ -200,7 +200,7 @@ Style/RedundantParentheses:
 # Cop supports --auto-correct.
 Style/RedundantSelf:
   Exclude:
-    - 'lib/liquid/strainer.rb'
+    - 'lib/solid/strainer.rb'
 
 # Offense count: 9
 # Cop supports --auto-correct.
@@ -224,14 +224,14 @@ Style/SymbolArray:
 # SupportedStyles: require_parentheses, require_no_parentheses, require_parentheses_when_complex
 Style/TernaryParentheses:
   Exclude:
-    - 'lib/liquid/context.rb'
-    - 'lib/liquid/utils.rb'
+    - 'lib/solid/context.rb'
+    - 'lib/solid/utils.rb'
 
 # Offense count: 4
 # Cop supports --auto-correct.
 Style/UnneededInterpolation:
   Exclude:
-    - 'lib/liquid/i18n.rb'
+    - 'lib/solid/i18n.rb'
     - 'test/integration/standard_filter_test.rb'
 
 # Offense count: 2
@@ -245,4 +245,4 @@ Style/UnneededPercentQ:
 # Configuration parameters: MaxLineLength.
 Style/WhileUntilModifier:
   Exclude:
-    - 'lib/liquid/tags/case.rb'
+    - 'lib/solid/tags/case.rb'

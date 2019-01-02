@@ -1,7 +1,11 @@
 [![Build Status](https://api.travis-ci.org/Shopify/liquid.svg?branch=master)](http://travis-ci.org/Shopify/liquid)
 [![Inline docs](http://inch-ci.org/github/Shopify/liquid.svg?branch=master)](http://inch-ci.org/github/Shopify/liquid)
 
-# Liquid template engine
+# Solid template engine
+
+## NOTE
+
+This is just a straight-up fork of Liquid that uses a slightly different syntax so that we can allow for two-pass parsing -- a first pass for our own processing and then a second pass for user-side parsing. Our syntax uses `{{{/}}}` and `{{%/%}}` for tag tokens rather than the standard `{{/}}` and `{%/%}`.
 
 * [Contributing guidelines](CONTRIBUTING.md)
 * [Version history](History.md)
@@ -56,7 +60,7 @@ For standard use you can just pass it the content of a file and call render with
 
 Setting the error mode of Liquid lets you specify how strictly you want your templates to be interpreted.
 Normally the parser is very lax and will accept almost anything without error. Unfortunately this can make
-it very hard to debug and can lead to unexpected behaviour. 
+it very hard to debug and can lead to unexpected behaviour.
 
 Liquid also comes with a stricter parser that can be used when editing templates to give better error messages
 when templates are invalid. You can enable this new parser like this:

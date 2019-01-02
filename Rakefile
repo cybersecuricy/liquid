@@ -1,7 +1,7 @@
 require 'rake'
 require 'rake/testtask'
 $LOAD_PATH.unshift File.expand_path("../lib", __FILE__)
-require "liquid/version"
+require "solid/version"
 
 task default: [:test, :rubocop]
 
@@ -33,8 +33,6 @@ task :test do
   Rake::Task['base_test'].invoke
 
   if RUBY_ENGINE == 'ruby'
-    ENV['LIQUID-C'] = '1'
-
     ENV['LIQUID_PARSER_MODE'] = 'lax'
     Rake::Task['base_test'].reenable
     Rake::Task['base_test'].invoke
@@ -47,39 +45,39 @@ end
 
 task gem: :build
 task :build do
-  system "gem build liquid.gemspec"
+  system "gem build solid.gemspec"
 end
 
 task install: :build do
-  system "gem install liquid-#{Liquid::VERSION}.gem"
+  system "gem install solid-#{Solid::VERSION}.gem"
 end
 
 task release: :build do
-  system "git tag -a v#{Liquid::VERSION} -m 'Tagging #{Liquid::VERSION}'"
+  system "git tag -a v#{Solid::VERSION} -m 'Tagging #{Solid::VERSION}'"
   system "git push --tags"
-  system "gem push liquid-#{Liquid::VERSION}.gem"
-  system "rm liquid-#{Liquid::VERSION}.gem"
+  system "gem push solid-#{Solid::VERSION}.gem"
+  system "rm solid-#{Solid::VERSION}.gem"
 end
 
 namespace :benchmark do
-  desc "Run the liquid benchmark with lax parsing"
+  desc "Run the solid benchmark with lax parsing"
   task :run do
     ruby "./performance/benchmark.rb lax"
   end
 
-  desc "Run the liquid benchmark with strict parsing"
+  desc "Run the solid benchmark with strict parsing"
   task :strict do
     ruby "./performance/benchmark.rb strict"
   end
 end
 
 namespace :profile do
-  desc "Run the liquid profile/performance coverage"
+  desc "Run the solid profile/performance coverage"
   task :run do
     ruby "./performance/profile.rb"
   end
 
-  desc "Run the liquid profile/performance coverage with strict parsing"
+  desc "Run the solid profile/performance coverage with strict parsing"
   task :strict do
     ruby "./performance/profile.rb strict"
   end
@@ -91,5 +89,5 @@ task :example do
 end
 
 task :console do
-  exec 'irb -I lib -r liquid'
+  exec 'irb -I lib -r solid'
 end

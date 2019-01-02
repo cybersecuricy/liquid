@@ -1,17 +1,17 @@
 require 'test_helper'
 
 class TemplateUnitTest < Minitest::Test
-  include Liquid
+  include Solid
 
   def test_sets_default_localization_in_document
     t = Template.new
-    t.parse('{%comment%}{%endcomment%}')
+    t.parse('{{%comment%}}{{%endcomment%}}')
     assert_instance_of I18n, t.root.nodelist[0].options[:locale]
   end
 
   def test_sets_default_localization_in_context_with_quick_initialization
     t = Template.new
-    t.parse('{%comment%}{%endcomment%}', locale: I18n.new(fixture("en_locale.yml")))
+    t.parse('{{%comment%}}{{%endcomment%}}', locale: I18n.new(fixture("en_locale.yml")))
 
     locale = t.root.nodelist[0].options[:locale]
     assert_instance_of I18n, locale
@@ -19,8 +19,8 @@ class TemplateUnitTest < Minitest::Test
   end
 
   def test_with_cache_classes_tags_returns_the_same_class
-    original_cache_setting = Liquid.cache_classes
-    Liquid.cache_classes = true
+    original_cache_setting = Solid.cache_classes
+    Solid.cache_classes = true
 
     original_klass = Class.new
     Object.send(:const_set, :CustomTag, original_klass)
@@ -35,12 +35,12 @@ class TemplateUnitTest < Minitest::Test
   ensure
     Object.send(:remove_const, :CustomTag)
     Template.tags.delete('custom')
-    Liquid.cache_classes = original_cache_setting
+    Solid.cache_classes = original_cache_setting
   end
 
   def test_without_cache_classes_tags_reloads_the_class
-    original_cache_setting = Liquid.cache_classes
-    Liquid.cache_classes = false
+    original_cache_setting = Solid.cache_classes
+    Solid.cache_classes = false
 
     original_klass = Class.new
     Object.send(:const_set, :CustomTag, original_klass)
@@ -55,7 +55,7 @@ class TemplateUnitTest < Minitest::Test
   ensure
     Object.send(:remove_const, :CustomTag)
     Template.tags.delete('custom')
-    Liquid.cache_classes = original_cache_setting
+    Solid.cache_classes = original_cache_setting
   end
 
   class FakeTag; end

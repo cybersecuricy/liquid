@@ -1,7 +1,7 @@
 require 'test_helper'
 
 class StrainerUnitTest < Minitest::Test
-  include Liquid
+  include Solid
 
   module AccessScopeFilters
     def public_filter
@@ -24,7 +24,7 @@ class StrainerUnitTest < Minitest::Test
 
   def test_stainer_raises_argument_error
     strainer = Strainer.create(nil)
-    assert_raises(Liquid::ArgumentError) do
+    assert_raises(Solid::ArgumentError) do
       strainer.invoke("public_filter", 1)
     end
   end
@@ -33,9 +33,9 @@ class StrainerUnitTest < Minitest::Test
     strainer = Strainer.create(nil)
     begin
       strainer.invoke("public_filter", 1)
-    rescue Liquid::ArgumentError => e
+    rescue Solid::ArgumentError => e
       assert_match(
-        /\ALiquid error: wrong number of arguments \((1 for 0|given 1, expected 0)\)\z/,
+        /\ASolid error: wrong number of arguments \((1 for 0|given 1, expected 0)\)\z/,
         e.message)
       assert_equal e.backtrace[0].split(':')[0], __FILE__
     end
@@ -75,7 +75,7 @@ class StrainerUnitTest < Minitest::Test
     assert_kind_of Strainer, strainer
     assert_kind_of a, strainer
     assert_kind_of b, strainer
-    assert_kind_of Liquid::StandardFilters, strainer
+    assert_kind_of Solid::StandardFilters, strainer
   end
 
   def test_add_filter_when_wrong_filter_class
@@ -99,10 +99,10 @@ class StrainerUnitTest < Minitest::Test
   def test_add_filter_raises_when_module_privately_overrides_registered_public_methods
     strainer = Context.new.strainer
 
-    error = assert_raises(Liquid::MethodOverrideError) do
+    error = assert_raises(Solid::MethodOverrideError) do
       strainer.class.add_filter(PrivateMethodOverrideFilter)
     end
-    assert_equal 'Liquid error: Filter overrides registered public methods as non public: public_filter', error.message
+    assert_equal 'Solid error: Filter overrides registered public methods as non public: public_filter', error.message
   end
 
   module ProtectedMethodOverrideFilter
@@ -116,10 +116,10 @@ class StrainerUnitTest < Minitest::Test
   def test_add_filter_raises_when_module_overrides_registered_public_method_as_protected
     strainer = Context.new.strainer
 
-    error = assert_raises(Liquid::MethodOverrideError) do
+    error = assert_raises(Solid::MethodOverrideError) do
       strainer.class.add_filter(ProtectedMethodOverrideFilter)
     end
-    assert_equal 'Liquid error: Filter overrides registered public methods as non public: public_filter', error.message
+    assert_equal 'Solid error: Filter overrides registered public methods as non public: public_filter', error.message
   end
 
   module PublicMethodOverrideFilter
