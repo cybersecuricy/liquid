@@ -9,8 +9,14 @@ module Solid
       '<'.freeze => '&lt;'.freeze,
       '"'.freeze => '&quot;'.freeze,
       "'".freeze => '&#39;'.freeze
-    }
+    }.freeze
     HTML_ESCAPE_ONCE_REGEXP = /["><']|&(?!([a-zA-Z]+|(#\d+));)/
+    STRIP_HTML_BLOCKS = Regexp.union(
+      /<script.*?<\/script>/m,
+      /<!--.*?-->/m,
+      /<style.*?<\/style>/m
+    )
+    STRIP_HTML_TAGS = /<.*?>/m
 
     # Return the size of an array or of an string
     def size(input)
@@ -46,7 +52,12 @@ module Solid
     end
 
     def url_decode(input)
-      CGI.unescape(input.to_s) unless input.nil?
+      return if input.nil?
+
+      result = CGI.unescape(input.to_s)
+      raise Solid::ArgumentError, "invalid byte sequence in #{result.encoding}" unless result.valid_encoding?
+
+      result
     end
 
     def slice(input, offset, length = nil)
@@ -103,7 +114,9 @@ module Solid
 
     def strip_html(input)
       empty = ''.freeze
-      input.to_s.gsub(/<script.*?<\/script>/m, empty).gsub(/<!--.*?-->/m, empty).gsub(/<style.*?<\/style>/m, empty).gsub(/<.*?>/m, empty)
+      result = input.to_s.gsub(STRIP_HTML_BLOCKS, empty)
+      result.gsub!(STRIP_HTML_TAGS, empty)
+      result
     end
 
     # Remove all newlines from the string
@@ -128,8 +141,10 @@ module Solid
           nil_safe_compare(a, b)
         end
       elsif ary.all? { |el| el.respond_to?(:[]) }
-        ary.sort do |a, b|
-          nil_safe_compare(a[property], b[property])
+        begin
+          ary.sort { |a, b| nil_safe_compare(a[property], b[property]) }
+        rescue TypeError
+          raise_property_error(property)
         end
       end
     end
@@ -146,8 +161,10 @@ module Solid
           nil_safe_casecmp(a, b)
         end
       elsif ary.all? { |el| el.respond_to?(:[]) }
-        ary.sort do |a, b|
-          nil_safe_casecmp(a[property], b[property])
+        begin
+          ary.sort { |a, b| nil_safe_casecmp(a[property], b[property]) }
+        rescue TypeError
+          raise_property_error(property)
         end
       end
     end
@@ -160,9 +177,17 @@ module Solid
       if ary.empty?
         []
       elsif ary.first.respond_to?(:[]) && target_value.nil?
-        ary.where_present(property)
+        begin
+          ary.select { |item| item[property] }
+        rescue TypeError
+          raise_property_error(property)
+        end
       elsif ary.first.respond_to?(:[])
-        ary.where(property, target_value)
+        begin
+          ary.select { |item| item[property] == target_value }
+        rescue TypeError
+          raise_property_error(property)
+        end
       end
     end
 
@@ -176,7 +201,11 @@ module Solid
       elsif ary.empty? # The next two cases assume a non-empty array.
         []
       elsif ary.first.respond_to?(:[])
-        ary.uniq{ |a| a[property] }
+        begin
+          ary.uniq { |a| a[property] }
+        rescue TypeError
+          raise_property_error(property)
+        end
       end
     end
 
@@ -198,6 +227,8 @@ module Solid
           r.is_a?(Proc) ? r.call : r
         end
       end
+    rescue TypeError
+      raise_property_error(property)
     end
 
     # Remove nils within an array
@@ -210,7 +241,11 @@ module Solid
       elsif ary.empty? # The next two cases assume a non-empty array.
         []
       elsif ary.first.respond_to?(:[])
-        ary.reject{ |a| a[property].nil? }
+        begin
+          ary.reject { |a| a[property].nil? }
+        rescue TypeError
+          raise_property_error(property)
+        end
       end
     end
 
@@ -394,6 +429,10 @@ module Solid
 
     private
 
+    def raise_property_error(property)
+      raise Solid::ArgumentError.new("cannot select the property '#{property}'")
+    end
+
     def apply_operation(input, operand, operation)
       result = Utils.to_number(input).send(operation, Utils.to_number(operand))
       result.is_a?(BigDecimal) ? result.to_f : result
@@ -459,24 +498,6 @@ module Solid
         @input.each do |e|
           yield(e.respond_to?(:to_solid) ? e.to_solid : e)
         end
-      end
-
-      def where(property, target_value)
-        select do |item|
-          item[property] == target_value
-        end
-      rescue TypeError
-        # Cannot index with the given property type (eg. indexing integers with strings
-        # which are only allowed to be indexed by other integers).
-        raise ArgumentError.new("cannot select the property `#{property}`")
-      end
-
-      def where_present(property)
-        select { |item| item[property] }
-      rescue TypeError
-        # Cannot index with the given property type (eg. indexing integers with strings
-        # which are only allowed to be indexed by other integers).
-        raise ArgumentError.new("cannot select the property `#{property}`")
       end
     end
   end

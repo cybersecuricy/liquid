@@ -158,6 +158,10 @@ class StandardFiltersTest < Minitest::Test
     assert_equal '1', @filters.url_decode(1)
     assert_equal '2001-02-03', @filters.url_decode(Date.new(2001, 2, 3))
     assert_nil @filters.url_decode(nil)
+    exception = assert_raises Solid::ArgumentError do
+      @filters.url_decode('%ff')
+    end
+    assert_equal 'Solid error: invalid byte sequence in UTF-8', exception.message
   end
 
   def test_truncatewords
@@ -177,6 +181,9 @@ class StandardFiltersTest < Minitest::Test
     assert_equal 'test', @filters.strip_html("<div\nclass='multiline'>test</div>")
     assert_equal 'test', @filters.strip_html("<!-- foo bar \n test -->test")
     assert_equal '', @filters.strip_html(nil)
+
+    # Quirk of the existing implementation
+    assert_equal 'foo;', @filters.strip_html("<<<script </script>script>foo;</script>")
   end
 
   def test_join
@@ -268,8 +275,32 @@ class StandardFiltersTest < Minitest::Test
     assert_equal [], @filters.sort([], "a")
   end
 
+  def test_sort_invalid_property
+    foo = [
+      [1],
+      [2],
+      [3]
+    ]
+
+    assert_raises Solid::ArgumentError do
+      @filters.sort(foo, "bar")
+    end
+  end
+
   def test_sort_natural_empty_array
     assert_equal [], @filters.sort_natural([], "a")
+  end
+
+  def test_sort_natural_invalid_property
+    foo = [
+      [1],
+      [2],
+      [3]
+    ]
+
+    assert_raises Solid::ArgumentError do
+      @filters.sort_natural(foo, "bar")
+    end
   end
 
   def test_legacy_sort_hash
@@ -295,8 +326,32 @@ class StandardFiltersTest < Minitest::Test
     assert_equal [], @filters.uniq([], "a")
   end
 
+  def test_uniq_invalid_property
+    foo = [
+      [1],
+      [2],
+      [3]
+    ]
+
+    assert_raises Solid::ArgumentError do
+      @filters.uniq(foo, "bar")
+    end
+  end
+
   def test_compact_empty_array
     assert_equal [], @filters.compact([], "a")
+  end
+
+  def test_compact_invalid_property
+    foo = [
+      [1],
+      [2],
+      [3]
+    ]
+
+    assert_raises Solid::ArgumentError do
+      @filters.compact(foo, "bar")
+    end
   end
 
   def test_reverse
@@ -364,6 +419,29 @@ class StandardFiltersTest < Minitest::Test
     assert_template_result "123", '{{{ foo | map: "foo" }}}', "foo" => TestEnumerable.new
   end
 
+  def test_map_returns_empty_on_2d_input_array
+    foo = [
+      [1],
+      [2],
+      [3]
+    ]
+
+    assert_raises Solid::ArgumentError do
+      @filters.map(foo, "bar")
+    end
+  end
+
+  def test_map_returns_empty_with_no_property
+    foo = [
+      [1],
+      [2],
+      [3]
+    ]
+    assert_raises Solid::ArgumentError do
+      @filters.map(foo, nil)
+    end
+  end
+
   def test_sort_works_on_enumerables
     assert_template_result "213", '{{{ foo | sort: "bar" | map: "foo" }}}', "foo" => TestEnumerable.new
   end
@@ -394,9 +472,9 @@ class StandardFiltersTest < Minitest::Test
     assert_equal '07/05/2006', @filters.date("2006-07-05 10:00:00", "%m/%d/%Y")
 
     assert_equal "07/16/2004", @filters.date("Fri Jul 16 01:00:00 2004", "%m/%d/%Y")
-    assert_equal "#{Date.today.year}", @filters.date('now', '%Y')
-    assert_equal "#{Date.today.year}", @filters.date('today', '%Y')
-    assert_equal "#{Date.today.year}", @filters.date('Today', '%Y')
+    assert_equal Date.today.year.to_s, @filters.date('now', '%Y')
+    assert_equal Date.today.year.to_s, @filters.date('today', '%Y')
+    assert_equal Date.today.year.to_s, @filters.date('Today', '%Y')
 
     assert_nil @filters.date(nil, "%B")
 
