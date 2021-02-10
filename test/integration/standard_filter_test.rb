@@ -4,7 +4,7 @@
 require 'test_helper'
 
 class Filters
-  include Liquid::StandardFilters
+  include Solid::StandardFilters
 end
 
 class TestThing
@@ -22,19 +22,19 @@ class TestThing
     to_s
   end
 
-  def to_liquid
+  def to_solid
     @foo += 1
     self
   end
 end
 
-class TestDrop < Liquid::Drop
+class TestDrop < Solid::Drop
   def test
     "testfoo"
   end
 end
 
-class TestEnumerable < Liquid::Drop
+class TestEnumerable < Solid::Drop
   include Enumerable
 
   def each(&block)
@@ -42,7 +42,7 @@ class TestEnumerable < Liquid::Drop
   end
 end
 
-class NumberLikeThing < Liquid::Drop
+class NumberLikeThing < Solid::Drop
   def initialize(amount)
     @amount = amount
   end
@@ -53,7 +53,7 @@ class NumberLikeThing < Liquid::Drop
 end
 
 class StandardFiltersTest < Minitest::Test
-  include Liquid
+  include Solid
 
   def setup
     @filters = Filters.new
@@ -88,10 +88,10 @@ class StandardFiltersTest < Minitest::Test
     assert_equal('', @filters.slice('foobar', 100, 10))
     assert_equal('', @filters.slice('foobar', -100, 10))
     assert_equal('oob', @filters.slice('foobar', '1', '3'))
-    assert_raises(Liquid::ArgumentError) do
+    assert_raises(Solid::ArgumentError) do
       @filters.slice('foobar', nil)
     end
-    assert_raises(Liquid::ArgumentError) do
+    assert_raises(Solid::ArgumentError) do
       @filters.slice('foobar', 0, "")
     end
   end
@@ -159,10 +159,10 @@ class StandardFiltersTest < Minitest::Test
     assert_equal('1', @filters.url_decode(1))
     assert_equal('2001-02-03', @filters.url_decode(Date.new(2001, 2, 3)))
     assert_nil(@filters.url_decode(nil))
-    exception = assert_raises(Liquid::ArgumentError) do
+    exception = assert_raises(Solid::ArgumentError) do
       @filters.url_decode('%ff')
     end
-    assert_equal('Liquid error: invalid byte sequence in UTF-8', exception.message)
+    assert_equal('Solid error: invalid byte sequence in UTF-8', exception.message)
   end
 
   def test_truncatewords
@@ -289,7 +289,7 @@ class StandardFiltersTest < Minitest::Test
       [3],
     ]
 
-    assert_raises(Liquid::ArgumentError) do
+    assert_raises(Solid::ArgumentError) do
       @filters.sort(foo, "bar")
     end
   end
@@ -305,7 +305,7 @@ class StandardFiltersTest < Minitest::Test
       [3],
     ]
 
-    assert_raises(Liquid::ArgumentError) do
+    assert_raises(Solid::ArgumentError) do
       @filters.sort_natural(foo, "bar")
     end
   end
@@ -340,7 +340,7 @@ class StandardFiltersTest < Minitest::Test
       [3],
     ]
 
-    assert_raises(Liquid::ArgumentError) do
+    assert_raises(Solid::ArgumentError) do
       @filters.uniq(foo, "bar")
     end
   end
@@ -356,7 +356,7 @@ class StandardFiltersTest < Minitest::Test
       [3],
     ]
 
-    assert_raises(Liquid::ArgumentError) do
+    assert_raises(Solid::ArgumentError) do
       @filters.compact(foo, "bar")
     end
   end
@@ -380,7 +380,7 @@ class StandardFiltersTest < Minitest::Test
     assert_template_result("", '{{ "foo" | map: "inspect" }}')
   end
 
-  def test_map_calls_to_liquid
+  def test_map_calls_to_solid
     t = TestThing.new
     assert_template_result("woot: 1", '{{ foo | map: "whatever" }}', "foo" => [t])
   end
@@ -396,9 +396,9 @@ class StandardFiltersTest < Minitest::Test
     assert_template_result("42", template, "thing" => hash)
   end
 
-  def test_sort_calls_to_liquid
+  def test_sort_calls_to_solid
     t = TestThing.new
-    Liquid::Template.parse('{{ foo | sort: "whatever" }}').render("foo" => [t])
+    Solid::Template.parse('{{ foo | sort: "whatever" }}').render("foo" => [t])
     assert(t.foo > 0)
   end
 
@@ -433,7 +433,7 @@ class StandardFiltersTest < Minitest::Test
       [3],
     ]
 
-    assert_raises(Liquid::ArgumentError) do
+    assert_raises(Solid::ArgumentError) do
       @filters.map(foo, "bar")
     end
   end
@@ -444,7 +444,7 @@ class StandardFiltersTest < Minitest::Test
       [2],
       [3],
     ]
-    assert_raises(Liquid::ArgumentError) do
+    assert_raises(Solid::ArgumentError) do
       @filters.map(foo, nil)
     end
   end
@@ -453,12 +453,12 @@ class StandardFiltersTest < Minitest::Test
     assert_template_result("213", '{{ foo | sort: "bar" | map: "foo" }}', "foo" => TestEnumerable.new)
   end
 
-  def test_first_and_last_call_to_liquid
-    assert_template_result('foobar', '{{ foo | first }}', 'foo' => [ThingWithToLiquid.new])
-    assert_template_result('foobar', '{{ foo | last }}', 'foo' => [ThingWithToLiquid.new])
+  def test_first_and_last_call_to_solid
+    assert_template_result('foobar', '{{ foo | first }}', 'foo' => [ThingWithToSolid.new])
+    assert_template_result('foobar', '{{ foo | last }}', 'foo' => [ThingWithToSolid.new])
   end
 
-  def test_truncate_calls_to_liquid
+  def test_truncate_calls_to_solid
     assert_template_result("wo...", '{{ foo | truncate: 5 }}', "foo" => TestThing.new)
   end
 
@@ -587,10 +587,10 @@ class StandardFiltersTest < Minitest::Test
     assert_template_result("4", "{{ 14 | divided_by:3 }}")
 
     assert_template_result("5", "{{ 15 | divided_by:3 }}")
-    assert_equal("Liquid error: divided by 0", Template.parse("{{ 5 | divided_by:0 }}").render)
+    assert_equal("Solid error: divided by 0", Template.parse("{{ 5 | divided_by:0 }}").render)
 
     assert_template_result("0.5", "{{ 2.0 | divided_by:4 }}")
-    assert_raises(Liquid::ZeroDivisionError) do
+    assert_raises(Solid::ZeroDivisionError) do
       assert_template_result("4", "{{ 1 | modulo: 0 }}")
     end
 
@@ -599,7 +599,7 @@ class StandardFiltersTest < Minitest::Test
 
   def test_modulo
     assert_template_result("1", "{{ 3 | modulo:2 }}")
-    assert_raises(Liquid::ZeroDivisionError) do
+    assert_raises(Solid::ZeroDivisionError) do
       assert_template_result("4", "{{ 1 | modulo: 0 }}")
     end
 
@@ -610,7 +610,7 @@ class StandardFiltersTest < Minitest::Test
     assert_template_result("5", "{{ input | round }}", 'input' => 4.6)
     assert_template_result("4", "{{ '4.3' | round }}")
     assert_template_result("4.56", "{{ input | round: 2 }}", 'input' => 4.5612)
-    assert_raises(Liquid::FloatDomainError) do
+    assert_raises(Solid::FloatDomainError) do
       assert_template_result("4", "{{ 1.0 | divided_by: 0.0 | round }}")
     end
 
@@ -621,7 +621,7 @@ class StandardFiltersTest < Minitest::Test
   def test_ceil
     assert_template_result("5", "{{ input | ceil }}", 'input' => 4.6)
     assert_template_result("5", "{{ '4.3' | ceil }}")
-    assert_raises(Liquid::FloatDomainError) do
+    assert_raises(Solid::FloatDomainError) do
       assert_template_result("4", "{{ 1.0 | divided_by: 0.0 | ceil }}")
     end
 
@@ -631,7 +631,7 @@ class StandardFiltersTest < Minitest::Test
   def test_floor
     assert_template_result("4", "{{ input | floor }}", 'input' => 4.6)
     assert_template_result("4", "{{ '4.3' | floor }}")
-    assert_raises(Liquid::FloatDomainError) do
+    assert_raises(Solid::FloatDomainError) do
       assert_template_result("4", "{{ 1.0 | divided_by: 0.0 | floor }}")
     end
 
@@ -671,7 +671,7 @@ class StandardFiltersTest < Minitest::Test
     assert_equal([1, 2, 'a'],  @filters.concat([1, 2], ['a']))
     assert_equal([1, 2, 10],   @filters.concat([1, 2], [10]))
 
-    assert_raises(Liquid::ArgumentError, "concat filter requires an array argument") do
+    assert_raises(Solid::ArgumentError, "concat filter requires an array argument") do
       @filters.concat([1, 2], 10)
     end
   end
@@ -751,8 +751,8 @@ class StandardFiltersTest < Minitest::Test
   end
 
   def test_where_indexable_but_non_map_value
-    assert_raises(Liquid::ArgumentError) { @filters.where(1, "ok", true) }
-    assert_raises(Liquid::ArgumentError) { @filters.where(1, "ok") }
+    assert_raises(Solid::ArgumentError) { @filters.where(1, "ok", true) }
+    assert_raises(Solid::ArgumentError) { @filters.where(1, "ok") }
   end
 
   def test_where_non_boolean_value
@@ -772,7 +772,7 @@ class StandardFiltersTest < Minitest::Test
     assert_nil(@filters.where([nil], "ok"))
   end
 
-  def test_all_filters_never_raise_non_liquid_exception
+  def test_all_filters_never_raise_non_solid_exception
     test_drop = TestDrop.new
     test_drop.context = Context.new
     test_enum = TestEnumerable.new
@@ -807,7 +807,7 @@ class StandardFiltersTest < Minitest::Test
           inputs << ([other] * (arg_count - 1)) if arg_count > 1
           begin
             @filters.send(method, *inputs)
-          rescue Liquid::ArgumentError, Liquid::ZeroDivisionError
+          rescue Solid::ArgumentError, Solid::ZeroDivisionError
             nil
           end
         end

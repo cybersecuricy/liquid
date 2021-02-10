@@ -3,7 +3,7 @@
 require 'test_helper'
 
 class AssignTest < Minitest::Test
-  include Liquid
+  include Solid
 
   def test_assign_with_hyphen_in_variable_name
     template_source = <<-END_TEMPLATE
@@ -56,7 +56,7 @@ class AssignTest < Minitest::Test
   def test_assign_score_exceeding_resource_limit
     t = Template.parse("{% assign foo = 42 %}{% assign bar = 23 %}")
     t.resource_limits.assign_score_limit = 1
-    assert_equal("Liquid error: Memory limits exceeded", t.render)
+    assert_equal("Solid error: Memory limits exceeded", t.render)
     assert(t.resource_limits.reached?)
 
     t.resource_limits.assign_score_limit = 2
@@ -68,7 +68,7 @@ class AssignTest < Minitest::Test
     t = Template.parse("{% assign foo = 'aaaa' | reverse %}")
 
     t.resource_limits.assign_score_limit = 3
-    assert_equal("Liquid error: Memory limits exceeded", t.render)
+    assert_equal("Solid error: Memory limits exceeded", t.render)
     assert(t.resource_limits.reached?)
 
     t.resource_limits.assign_score_limit = 5
@@ -99,7 +99,7 @@ class AssignTest < Minitest::Test
 
   private
 
-  class ObjectWrapperDrop < Liquid::Drop
+  class ObjectWrapperDrop < Solid::Drop
     def initialize(obj)
       @obj = obj
     end
@@ -110,8 +110,8 @@ class AssignTest < Minitest::Test
   end
 
   def assign_score_of(obj)
-    context = Liquid::Context.new('drop' => ObjectWrapperDrop.new(obj))
-    Liquid::Template.parse('{% assign obj = drop.value %}').render!(context)
+    context = Solid::Context.new('drop' => ObjectWrapperDrop.new(obj))
+    Solid::Template.parse('{% assign obj = drop.value %}').render!(context)
     context.resource_limits.assign_score
   end
 end

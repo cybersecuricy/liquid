@@ -3,7 +3,7 @@
 require 'test_helper'
 
 class LexerUnitTest < Minitest::Test
-  include Liquid
+  include Solid
 
   def test_strings
     tokens = Lexer.new(%( 'this is a test""' "wat 'lol'")).tokenize

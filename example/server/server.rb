@@ -3,8 +3,8 @@
 require 'webrick'
 require 'rexml/document'
 
-require_relative '../../lib/liquid'
-require_relative 'liquid_servlet'
+require_relative '../../lib/solid'
+require_relative 'solid_servlet'
 require_relative 'example_servlet'
 
 # Setup webrick

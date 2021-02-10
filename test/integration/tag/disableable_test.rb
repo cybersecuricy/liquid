@@ -3,7 +3,7 @@
 require 'test_helper'
 
 class TagDisableableTest < Minitest::Test
-  include Liquid
+  include Solid
 
   module RenderTagName
     def render(_context)
@@ -12,12 +12,12 @@ class TagDisableableTest < Minitest::Test
   end
 
   class Custom < Tag
-    prepend Liquid::Tag::Disableable
+    prepend Solid::Tag::Disableable
     include RenderTagName
   end
 
   class Custom2 < Tag
-    prepend Liquid::Tag::Disableable
+    prepend Solid::Tag::Disableable
     include RenderTagName
   end
 
@@ -33,7 +33,7 @@ class TagDisableableTest < Minitest::Test
     with_disableable_tags do
       with_custom_tag('disable', DisableCustom) do
         output = Template.parse('{% disable %}{% custom %};{% custom2 %}{% enddisable %}').render
-        assert_equal('Liquid error: custom usage is not allowed in this context;custom2', output)
+        assert_equal('Solid error: custom usage is not allowed in this context;custom2', output)
       end
     end
   end
@@ -42,7 +42,7 @@ class TagDisableableTest < Minitest::Test
     with_disableable_tags do
       with_custom_tag('disable', DisableBoth) do
         output = Template.parse('{% disable %}{% custom %};{% custom2 %}{% enddisable %}').render
-        assert_equal('Liquid error: custom usage is not allowed in this context;Liquid error: custom2 usage is not allowed in this context', output)
+        assert_equal('Solid error: custom usage is not allowed in this context;Solid error: custom2 usage is not allowed in this context', output)
       end
     end
   end

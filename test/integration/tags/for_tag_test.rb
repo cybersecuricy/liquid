@@ -2,14 +2,14 @@
 
 require 'test_helper'
 
-class ThingWithValue < Liquid::Drop
+class ThingWithValue < Solid::Drop
   def value
     3
   end
 end
 
 class ForTagTest < Minitest::Test
-  include Liquid
+  include Solid
 
   def test_for
     assert_template_result(' yo  yo  yo  yo ', '{%for item in array%} yo {%endfor%}', 'array' => [1, 2, 3, 4])
@@ -41,7 +41,7 @@ HERE
   def test_for_with_range
     assert_template_result(' 1  2  3 ', '{%for item in (1..3) %} {{item}} {%endfor%}')
 
-    assert_raises(Liquid::ArgumentError) do
+    assert_raises(Solid::ArgumentError) do
       Template.parse('{% for i in (a..2) %}{% endfor %}').render!("a" => [1, 2])
     end
 
@@ -113,10 +113,10 @@ HERE
       {% endfor %}
     MKUP
 
-    exception = assert_raises(Liquid::ArgumentError) do
+    exception = assert_raises(Solid::ArgumentError) do
       Template.parse(template).render!(assigns)
     end
-    assert_equal("Liquid error: invalid integer", exception.message)
+    assert_equal("Solid error: invalid integer", exception.message)
   end
 
   def test_limiting_with_invalid_offset
@@ -127,10 +127,10 @@ HERE
       {% endfor %}
     MKUP
 
-    exception = assert_raises(Liquid::ArgumentError) do
+    exception = assert_raises(Solid::ArgumentError) do
       Template.parse(template).render!(assigns)
     end
-    assert_equal("Liquid error: invalid integer", exception.message)
+    assert_equal("Solid error: invalid integer", exception.message)
   end
 
   def test_dynamic_variable_limiting
@@ -358,8 +358,8 @@ HERE
   end
 
   def test_bad_variable_naming_in_for_loop
-    assert_raises(Liquid::SyntaxError) do
-      Liquid::Template.parse('{% for a/b in x %}{% endfor %}')
+    assert_raises(Solid::SyntaxError) do
+      Solid::Template.parse('{% for a/b in x %}{% endfor %}')
     end
   end
 
@@ -370,7 +370,7 @@ HERE
     assert_template_result(expected, template, assigns)
   end
 
-  class LoaderDrop < Liquid::Drop
+  class LoaderDrop < Solid::Drop
     attr_accessor :each_called, :load_slice_called
 
     def initialize(data)
@@ -432,7 +432,7 @@ HERE
     context = Context.new(ErrorDrop.new)
 
     assert_raises(StandardError) do
-      Liquid::Template.parse('{% for i in (1..2) %}{{ standard_error }}{% endfor %}').render!(context)
+      Solid::Template.parse('{% for i in (1..2) %}{{ standard_error }}{% endfor %}').render!(context)
     end
 
     assert(context.registers[:for_stack].empty?)

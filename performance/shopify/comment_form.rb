@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-class CommentForm < Liquid::Block
-  Syntax = /(#{Liquid::VariableSignature}+)/
+class CommentForm < Solid::Block
+  Syntax = /(#{Solid::VariableSignature}+)/
 
   def initialize(tag_name, markup, options)
     super

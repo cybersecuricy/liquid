@@ -32,14 +32,14 @@ class TokenizerTest < Minitest::Test
 
   private
 
-  def new_tokenizer(source, parse_context: Liquid::ParseContext.new, start_line_number: nil)
+  def new_tokenizer(source, parse_context: Solid::ParseContext.new, start_line_number: nil)
     parse_context.new_tokenizer(source, start_line_number: start_line_number)
   end
 
   def tokenize(source)
     tokenizer = new_tokenizer(source)
     tokens    = []
-    # shift is private in Liquid::C::Tokenizer, since it is only for unit testing
+    # shift is private in Solid::C::Tokenizer, since it is only for unit testing
     while (t = tokenizer.send(:shift))
       tokens << t
     end

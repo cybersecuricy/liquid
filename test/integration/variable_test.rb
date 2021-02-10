@@ -3,7 +3,7 @@
 require 'test_helper'
 
 class VariableTest < Minitest::Test
-  include Liquid
+  include Solid
 
   def test_simple_variable
     template = Template.parse(%({{test}}))
@@ -11,8 +11,8 @@ class VariableTest < Minitest::Test
     assert_equal('worked wonderfully', template.render!('test' => 'worked wonderfully'))
   end
 
-  def test_variable_render_calls_to_liquid
-    assert_template_result('foobar', '{{ foo }}', 'foo' => ThingWithToLiquid.new)
+  def test_variable_render_calls_to_solid
+    assert_template_result('foobar', '{{ foo }}', 'foo' => ThingWithToSolid.new)
   end
 
   def test_simple_with_whitespaces

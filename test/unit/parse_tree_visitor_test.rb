@@ -3,7 +3,7 @@
 require 'test_helper'
 
 class ParseTreeVisitorTest < Minitest::Test
-  include Liquid
+  include Solid
 
   def test_variable
     assert_equal(

@@ -4,7 +4,7 @@ require 'yaml'
 
 module Database
   # Load the standard vision toolkit database and re-arrage it to be simply exportable
-  # to liquid as assigns. All this is based on Shopify
+  # to solid as assigns. All this is based on Shopify
   def self.tables
     @tables ||= begin
       db = YAML.load_file("#{__dir__}/vision.database.yml")
@@ -17,7 +17,7 @@ module Database
         product['collections'] = collections
       end
 
-      # key the tables by handles, as this is how liquid expects it.
+      # key the tables by handles, as this is how solid expects it.
       db = db.each_with_object({}) do |(key, values), assigns|
         assigns[key] = values.each_with_object({}) do |v, h|
           h[v['handle']] = v

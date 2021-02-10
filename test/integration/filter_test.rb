@@ -25,7 +25,7 @@ module SubstituteFilter
 end
 
 class FiltersTest < Minitest::Test
-  include Liquid
+  include Solid
 
   module OverrideObjectMethodFilter
     def tap(_input)
@@ -154,18 +154,18 @@ class FiltersTest < Minitest::Test
     assert_equal("1000", Template.parse("{{var | tap}}").render!('var' => 1000))
   end
 
-  def test_liquid_argument_error
+  def test_solid_argument_error
     source = "{{ '' | size: 'too many args' }}"
-    exc = assert_raises(Liquid::ArgumentError) do
+    exc = assert_raises(Solid::ArgumentError) do
       Template.parse(source).render!
     end
-    assert_match(/\ALiquid error: wrong number of arguments /, exc.message)
+    assert_match(/\ASolid error: wrong number of arguments /, exc.message)
     assert_equal(exc.message, Template.parse(source).render)
   end
 end
 
 class FiltersInTemplate < Minitest::Test
-  include Liquid
+  include Solid
 
   def test_local_global
     with_global_filter(MoneyFilter) do
@@ -181,7 +181,7 @@ class FiltersInTemplate < Minitest::Test
   end
 end # FiltersTest
 
-class TestObject < Liquid::Drop
+class TestObject < Solid::Drop
   attr_accessor :a
   def initialize(a)
     @a = a

@@ -3,7 +3,7 @@
 require 'test_helper'
 
 class ProfilerTest < Minitest::Test
-  include Liquid
+  include Solid
 
   class ProfilingFileSystem
     def read_template_file(template_path)
@@ -12,7 +12,7 @@ class ProfilerTest < Minitest::Test
   end
 
   def setup
-    Liquid::Template.file_system = ProfilingFileSystem.new
+    Solid::Template.file_system = ProfilingFileSystem.new
   end
 
   def test_template_allows_flagging_profiling
@@ -39,7 +39,7 @@ class ProfilerTest < Minitest::Test
     assert_equal(0, t.profiler.length)
   end
 
-  def test_profiling_includes_line_numbers_of_liquid_nodes
+  def test_profiling_includes_line_numbers_of_solid_nodes
     t = Template.parse("{{ 'a string' | upcase }}\n{% increment test %}", profile: true)
     t.render!
     assert_equal(2, t.profiler.length)
@@ -88,7 +88,7 @@ class ProfilerTest < Minitest::Test
     assert(t.profiler.total_render_time >= 0, "Total render time was not calculated")
   end
 
-  class SleepTag < Liquid::Tag
+  class SleepTag < Solid::Tag
     def initialize(tag_name, markup, parse_context)
       super
       @duration = Float(markup)
@@ -101,8 +101,8 @@ class ProfilerTest < Minitest::Test
 
   def test_profiling_multiple_renders
     with_custom_tag('sleep', SleepTag) do
-      context = Liquid::Context.new
-      t = Liquid::Template.parse("{% sleep 0.001 %}", profile: true)
+      context = Solid::Context.new
+      t = Solid::Template.parse("{% sleep 0.001 %}", profile: true)
       context.template_name = 'index'
       t.render!(context)
       context.template_name = 'layout'

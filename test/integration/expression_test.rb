@@ -34,13 +34,13 @@ class ExpressionTest < Minitest::Test
   private
 
   def parse_and_eval(markup, **assigns)
-    if Liquid::Template.error_mode == :strict
-      p = Liquid::Parser.new(markup)
+    if Solid::Template.error_mode == :strict
+      p = Solid::Parser.new(markup)
       markup = p.expression
       p.consume(:end_of_string)
     end
-    expression = Liquid::Expression.parse(markup)
-    context = Liquid::Context.new(assigns)
+    expression = Solid::Expression.parse(markup)
+    context = Solid::Context.new(assigns)
     context.evaluate(expression)
   end
 end

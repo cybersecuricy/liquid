@@ -3,8 +3,8 @@
 require 'test_helper'
 require 'timeout'
 
-class TemplateContextDrop < Liquid::Drop
-  def liquid_method_missing(method)
+class TemplateContextDrop < Solid::Drop
+  def solid_method_missing(method)
     method
   end
 
@@ -17,26 +17,26 @@ class TemplateContextDrop < Liquid::Drop
   end
 end
 
-class SomethingWithLength < Liquid::Drop
+class SomethingWithLength < Solid::Drop
   def length
     nil
   end
 end
 
-class ErroneousDrop < Liquid::Drop
+class ErroneousDrop < Solid::Drop
   def bad_method
     raise 'ruby error in drop'
   end
 end
 
-class DropWithUndefinedMethod < Liquid::Drop
+class DropWithUndefinedMethod < Solid::Drop
   def foo
     'foo'
   end
 end
 
 class TemplateTest < Minitest::Test
-  include Liquid
+  include Solid
 
   def test_instance_assigns_persist_on_same_template_object_between_parses
     t = Template.new
@@ -112,7 +112,7 @@ class TemplateTest < Minitest::Test
   def test_resource_limits_render_length
     t = Template.parse("0123456789")
     t.resource_limits.render_length_limit = 9
-    assert_equal("Liquid error: Memory limits exceeded", t.render)
+    assert_equal("Solid error: Memory limits exceeded", t.render)
     assert(t.resource_limits.reached?)
 
     t.resource_limits.render_length_limit = 10
@@ -122,12 +122,12 @@ class TemplateTest < Minitest::Test
   def test_resource_limits_render_score
     t = Template.parse("{% for a in (1..10) %} {% for a in (1..10) %} foo {% endfor %} {% endfor %}")
     t.resource_limits.render_score_limit = 50
-    assert_equal("Liquid error: Memory limits exceeded", t.render)
+    assert_equal("Solid error: Memory limits exceeded", t.render)
     assert(t.resource_limits.reached?)
 
     t = Template.parse("{% for a in (1..100) %} foo {% endfor %}")
     t.resource_limits.render_score_limit = 50
-    assert_equal("Liquid error: Memory limits exceeded", t.render)
+    assert_equal("Solid error: Memory limits exceeded", t.render)
     assert(t.resource_limits.reached?)
 
     t.resource_limits.render_score_limit = 200
@@ -138,7 +138,7 @@ class TemplateTest < Minitest::Test
   def test_resource_limits_aborts_rendering_after_first_error
     t = Template.parse("{% for a in (1..100) %} foo1 {% endfor %} bar {% for a in (1..100) %} foo2 {% endfor %}")
     t.resource_limits.render_score_limit = 50
-    assert_equal("Liquid error: Memory limits exceeded", t.render)
+    assert_equal("Solid error: Memory limits exceeded", t.render)
     assert(t.resource_limits.reached?)
   end
 
@@ -152,19 +152,19 @@ class TemplateTest < Minitest::Test
   def test_render_length_persists_between_blocks
     t = Template.parse("{% if true %}aaaa{% endif %}")
     t.resource_limits.render_length_limit = 3
-    assert_equal("Liquid error: Memory limits exceeded", t.render)
+    assert_equal("Solid error: Memory limits exceeded", t.render)
     t.resource_limits.render_length_limit = 4
     assert_equal("aaaa", t.render)
 
     t = Template.parse("{% if true %}aaaa{% endif %}{% if true %}bbb{% endif %}")
     t.resource_limits.render_length_limit = 6
-    assert_equal("Liquid error: Memory limits exceeded", t.render)
+    assert_equal("Solid error: Memory limits exceeded", t.render)
     t.resource_limits.render_length_limit = 7
     assert_equal("aaaabbb", t.render)
 
     t = Template.parse("{% if true %}a{% endif %}{% if true %}b{% endif %}{% if true %}a{% endif %}{% if true %}b{% endif %}{% if true %}a{% endif %}{% if true %}b{% endif %}")
     t.resource_limits.render_length_limit = 5
-    assert_equal("Liquid error: Memory limits exceeded", t.render)
+    assert_equal("Solid error: Memory limits exceeded", t.render)
     t.resource_limits.render_length_limit = 6
     assert_equal("ababab", t.render)
   end
@@ -172,7 +172,7 @@ class TemplateTest < Minitest::Test
   def test_render_length_uses_number_of_bytes_not_characters
     t = Template.parse("{% if true %}すごい{% endif %}")
     t.resource_limits.render_length_limit = 8
-    assert_equal("Liquid error: Memory limits exceeded", t.render)
+    assert_equal("Solid error: Memory limits exceeded", t.render)
     t.resource_limits.render_length_limit = 9
     assert_equal("すごい", t.render)
   end
@@ -213,19 +213,19 @@ class TemplateTest < Minitest::Test
 
     output = Template.parse("{{ 1 | divided_by: 0 }}").render({}, exception_renderer: handler)
 
-    assert(exception.is_a?(Liquid::ZeroDivisionError))
+    assert(exception.is_a?(Solid::ZeroDivisionError))
     assert_equal('<!-- error -->', output)
   end
 
   def test_exception_renderer_that_raises
     exception = nil
-    assert_raises(Liquid::ZeroDivisionError) do
+    assert_raises(Solid::ZeroDivisionError) do
       Template.parse("{{ 1 | divided_by: 0 }}").render({}, exception_renderer: ->(e) {
                                                                                  exception = e
                                                                                  raise
                                                                                })
     end
-    assert(exception.is_a?(Liquid::ZeroDivisionError))
+    assert(exception.is_a?(Solid::ZeroDivisionError))
   end
 
   def test_global_filter_option_on_render
@@ -248,12 +248,12 @@ class TemplateTest < Minitest::Test
 
     assert_equal('33  32  ', result)
     assert_equal(3, t.errors.count)
-    assert_instance_of(Liquid::UndefinedVariable, t.errors[0])
-    assert_equal('Liquid error: undefined variable y', t.errors[0].message)
-    assert_instance_of(Liquid::UndefinedVariable, t.errors[1])
-    assert_equal('Liquid error: undefined variable b', t.errors[1].message)
-    assert_instance_of(Liquid::UndefinedVariable, t.errors[2])
-    assert_equal('Liquid error: undefined variable d', t.errors[2].message)
+    assert_instance_of(Solid::UndefinedVariable, t.errors[0])
+    assert_equal('Solid error: undefined variable y', t.errors[0].message)
+    assert_instance_of(Solid::UndefinedVariable, t.errors[1])
+    assert_equal('Solid error: undefined variable b', t.errors[1].message)
+    assert_instance_of(Solid::UndefinedVariable, t.errors[2])
+    assert_equal('Solid error: undefined variable d', t.errors[2].message)
   end
 
   def test_nil_value_does_not_raise
@@ -279,7 +279,7 @@ class TemplateTest < Minitest::Test
 
     assert_equal('foo ', result)
     assert_equal(1, t.errors.count)
-    assert_instance_of(Liquid::UndefinedDropMethod, t.errors[0])
+    assert_instance_of(Solid::UndefinedDropMethod, t.errors[0])
   end
 
   def test_undefined_drop_methods_raise
@@ -302,8 +302,8 @@ class TemplateTest < Minitest::Test
 
     assert_equal('123 ', result)
     assert_equal(1, t.errors.count)
-    assert_instance_of(Liquid::UndefinedFilter, t.errors[0])
-    assert_equal('Liquid error: undefined filter somefilter1', t.errors[0].message)
+    assert_instance_of(Solid::UndefinedFilter, t.errors[0])
+    assert_equal('Solid error: undefined filter somefilter1', t.errors[0].message)
   end
 
   def test_undefined_filters_raise

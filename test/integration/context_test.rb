@@ -3,12 +3,12 @@
 require 'test_helper'
 
 class HundredCentes
-  def to_liquid
+  def to_solid
     100
   end
 end
 
-class CentsDrop < Liquid::Drop
+class CentsDrop < Solid::Drop
   def amount
     HundredCentes.new
   end
@@ -18,20 +18,20 @@ class CentsDrop < Liquid::Drop
   end
 end
 
-class ContextSensitiveDrop < Liquid::Drop
+class ContextSensitiveDrop < Solid::Drop
   def test
     @context['test']
   end
 end
 
-class Category < Liquid::Drop
+class Category < Solid::Drop
   attr_accessor :name
 
   def initialize(name)
     @name = name
   end
 
-  def to_liquid
+  def to_solid
     CategoryDrop.new(self)
   end
 end
@@ -43,7 +43,7 @@ class CategoryDrop
   end
 end
 
-class CounterDrop < Liquid::Drop
+class CounterDrop < Solid::Drop
   def count
     @count ||= 0
     @count  += 1
@@ -60,16 +60,16 @@ class ArrayLike
     @counts[index]  += 1
   end
 
-  def to_liquid
+  def to_solid
     self
   end
 end
 
 class ContextTest < Minitest::Test
-  include Liquid
+  include Solid
 
   def setup
-    @context = Liquid::Context.new
+    @context = Solid::Context.new
   end
 
   def test_variables
@@ -108,11 +108,11 @@ class ContextTest < Minitest::Test
     @context.push
     @context.pop
 
-    assert_raises(Liquid::ContextError) do
+    assert_raises(Solid::ContextError) do
       @context.pop
     end
 
-    assert_raises(Liquid::ContextError) do
+    assert_raises(Solid::ContextError) do
       @context.push
       @context.pop
       @context.pop
@@ -454,7 +454,7 @@ class ContextTest < Minitest::Test
     assert_equal(345392, @context['magic'])
   end
 
-  def test_to_liquid_and_context_at_first_level
+  def test_to_solid_and_context_at_first_level
     @context['category'] = Category.new("foobar")
     assert_kind_of(CategoryDrop, @context['category'])
     assert_equal(@context, @context['category'].context)
@@ -524,7 +524,7 @@ class ContextTest < Minitest::Test
     super_context = Context.new
     super_context.exception_renderer = ->(_e) { 'my exception message' }
     subcontext = super_context.new_isolated_subcontext
-    assert_equal('my exception message', subcontext.handle_error(Liquid::Error.new))
+    assert_equal('my exception message', subcontext.handle_error(Solid::Error.new))
   end
 
   def test_new_isolated_subcontext_does_not_inherit_non_static_registers

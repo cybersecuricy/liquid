@@ -3,7 +3,7 @@
 require 'test_helper'
 
 class StrainerFactoryUnitTest < Minitest::Test
-  include Liquid
+  include Solid
 
   module AccessScopeFilters
     def public_filter
@@ -36,7 +36,7 @@ class StrainerFactoryUnitTest < Minitest::Test
 
   def test_stainer_raises_argument_error
     strainer = StrainerFactory.create(@context)
-    assert_raises(Liquid::ArgumentError) do
+    assert_raises(Solid::ArgumentError) do
       strainer.invoke("public_filter", 1)
     end
   end
@@ -44,12 +44,12 @@ class StrainerFactoryUnitTest < Minitest::Test
   def test_stainer_argument_error_contains_backtrace
     strainer = StrainerFactory.create(@context)
 
-    exception = assert_raises(Liquid::ArgumentError) do
+    exception = assert_raises(Solid::ArgumentError) do
       strainer.invoke("public_filter", 1)
     end
 
     assert_match(
-      /\ALiquid error: wrong number of arguments \((1 for 0|given 1, expected 0)\)\z/,
+      /\ASolid error: wrong number of arguments \((1 for 0|given 1, expected 0)\)\z/,
       exception.message
     )
     assert_equal(exception.backtrace[0].split(':')[0], __FILE__)
@@ -89,7 +89,7 @@ class StrainerFactoryUnitTest < Minitest::Test
     assert_kind_of(StrainerTemplate, strainer)
     assert_kind_of(a, strainer)
     assert_kind_of(b, strainer)
-    assert_kind_of(Liquid::StandardFilters, strainer)
+    assert_kind_of(Solid::StandardFilters, strainer)
   end
 
   def test_add_global_filter_clears_cache

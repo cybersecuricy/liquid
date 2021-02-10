@@ -3,7 +3,7 @@
 require 'test_helper'
 
 class IncrementTagTest < Minitest::Test
-  include Liquid
+  include Solid
 
   def test_inc
     assert_template_result('0', '{%increment port %}', {})

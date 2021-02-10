@@ -15,7 +15,7 @@ class HashOrderingTest < Minitest::Test
     end
   end
 
-  include Liquid
+  include Solid
 
   def test_global_register_order
     with_global_filter(MoneyFilter, CanadianMoneyFilter) do
