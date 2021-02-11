@@ -13,7 +13,7 @@ class TagTest < Minitest::Test
     end
 
     with_custom_tag('blabla', klass1) do
-      template = Solid::Template.parse("{% blabla %}")
+      template = Solid::Template.parse("{{% blabla %}}")
 
       assert_equal('hello', template.render)
 
@@ -31,7 +31,7 @@ class TagTest < Minitest::Test
     end
 
     with_custom_tag('blabla', klass2) do
-      template = Solid::Template.parse("{% blabla %}")
+      template = Solid::Template.parse("{{% blabla %}}")
 
       assert_equal('foohellobar', template.render)
 

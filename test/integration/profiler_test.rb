@@ -7,7 +7,7 @@ class ProfilerTest < Minitest::Test
 
   class ProfilingFileSystem
     def read_template_file(template_path)
-      "Rendering template {% assign template_name = '#{template_path}'%}\n{{ template_name }}"
+      "Rendering template {{% assign template_name = '#{template_path}'%}}\n{{{ template_name }}}"
     end
   end
 
@@ -16,14 +16,14 @@ class ProfilerTest < Minitest::Test
   end
 
   def test_template_allows_flagging_profiling
-    t = Template.parse("{{ 'a string' | upcase }}")
+    t = Template.parse("{{{ 'a string' | upcase }}}")
     t.render!
 
     assert_nil(t.profiler)
   end
 
   def test_parse_makes_available_simple_profiling
-    t = Template.parse("{{ 'a string' | upcase }}", profile: true)
+    t = Template.parse("{{{ 'a string' | upcase }}}", profile: true)
     t.render!
 
     assert_equal(1, t.profiler.length)
@@ -40,30 +40,30 @@ class ProfilerTest < Minitest::Test
   end
 
   def test_profiling_includes_line_numbers_of_solid_nodes
-    t = Template.parse("{{ 'a string' | upcase }}\n{% increment test %}", profile: true)
+    t = Template.parse("{{{ 'a string' | upcase }}}\n{{% increment test %}}", profile: true)
     t.render!
     assert_equal(2, t.profiler.length)
 
-    # {{ 'a string' | upcase }}
+    # {{{ 'a string' | upcase }}}
     assert_equal(1, t.profiler[0].line_number)
-    # {{ increment test }}
+    # {{{ increment test }}}
     assert_equal(2, t.profiler[1].line_number)
   end
 
   def test_profiling_includes_line_numbers_of_included_partials
-    t = Template.parse("{% include 'a_template' %}", profile: true)
+    t = Template.parse("{{% include 'a_template' %}}", profile: true)
     t.render!
 
     included_children = t.profiler[0].children
 
-    # {% assign template_name = 'a_template' %}
+    # {{% assign template_name = 'a_template' %}}
     assert_equal(1, included_children[0].line_number)
-    # {{ template_name }}
+    # {{{ template_name }}}
     assert_equal(2, included_children[1].line_number)
   end
 
   def test_profiling_render_tag
-    t = Template.parse("{% render 'a_template' %}", profile: true)
+    t = Template.parse("{{% render 'a_template' %}}", profile: true)
     t.render!
 
     render_children = t.profiler[0].children
@@ -74,7 +74,7 @@ class ProfilerTest < Minitest::Test
   end
 
   def test_profiling_times_the_rendering_of_tokens
-    t = Template.parse("{% include 'a_template' %}", profile: true)
+    t = Template.parse("{{% include 'a_template' %}}", profile: true)
     t.render!
 
     node = t.profiler[0]
@@ -82,7 +82,7 @@ class ProfilerTest < Minitest::Test
   end
 
   def test_profiling_times_the_entire_render
-    t = Template.parse("{% include 'a_template' %}", profile: true)
+    t = Template.parse("{{% include 'a_template' %}}", profile: true)
     t.render!
 
     assert(t.profiler.total_render_time >= 0, "Total render time was not calculated")
@@ -102,7 +102,7 @@ class ProfilerTest < Minitest::Test
   def test_profiling_multiple_renders
     with_custom_tag('sleep', SleepTag) do
       context = Solid::Context.new
-      t = Solid::Template.parse("{% sleep 0.001 %}", profile: true)
+      t = Solid::Template.parse("{{% sleep 0.001 %}}", profile: true)
       context.template_name = 'index'
       t.render!(context)
       context.template_name = 'layout'
@@ -120,7 +120,7 @@ class ProfilerTest < Minitest::Test
   end
 
   def test_profiling_uses_include_to_mark_children
-    t = Template.parse("{{ 'a string' | upcase }}\n{% include 'a_template' %}", profile: true)
+    t = Template.parse("{{{ 'a string' | upcase }}}\n{{% include 'a_template' %}}", profile: true)
     t.render!
 
     include_node = t.profiler[1]
@@ -128,7 +128,7 @@ class ProfilerTest < Minitest::Test
   end
 
   def test_profiling_marks_children_with_the_name_of_included_partial
-    t = Template.parse("{{ 'a string' | upcase }}\n{% include 'a_template' %}", profile: true)
+    t = Template.parse("{{{ 'a string' | upcase }}}\n{{% include 'a_template' %}}", profile: true)
     t.render!
 
     include_node = t.profiler[1]
@@ -138,7 +138,7 @@ class ProfilerTest < Minitest::Test
   end
 
   def test_profiling_supports_multiple_templates
-    t = Template.parse("{{ 'a string' | upcase }}\n{% include 'a_template' %}\n{% include 'b_template' %}", profile: true)
+    t = Template.parse("{{{ 'a string' | upcase }}}\n{{% include 'a_template' %}}\n{{% include 'b_template' %}}", profile: true)
     t.render!
 
     a_template = t.profiler[1]
@@ -153,7 +153,7 @@ class ProfilerTest < Minitest::Test
   end
 
   def test_profiling_supports_rendering_the_same_partial_multiple_times
-    t = Template.parse("{{ 'a string' | upcase }}\n{% include 'a_template' %}\n{% include 'a_template' %}", profile: true)
+    t = Template.parse("{{{ 'a string' | upcase }}}\n{{% include 'a_template' %}}\n{{% include 'a_template' %}}", profile: true)
     t.render!
 
     a_template1 = t.profiler[1]
@@ -168,7 +168,7 @@ class ProfilerTest < Minitest::Test
   end
 
   def test_can_iterate_over_each_profiling_entry
-    t = Template.parse("{{ 'a string' | upcase }}\n{% increment test %}", profile: true)
+    t = Template.parse("{{{ 'a string' | upcase }}}\n{{% increment test %}}", profile: true)
     t.render!
 
     timing_count = 0
@@ -180,7 +180,7 @@ class ProfilerTest < Minitest::Test
   end
 
   def test_profiling_marks_children_of_if_blocks
-    t = Template.parse("{% if true %} {% increment test %} {{ test }} {% endif %}", profile: true)
+    t = Template.parse("{{% if true %}} {{% increment test %}} {{{ test }}} {{% endif %}}", profile: true)
     t.render!
 
     assert_equal(1, t.profiler.length)
@@ -188,7 +188,7 @@ class ProfilerTest < Minitest::Test
   end
 
   def test_profiling_marks_children_of_for_blocks
-    t = Template.parse("{% for item in collection %} {{ item }} {% endfor %}", profile: true)
+    t = Template.parse("{{% for item in collection %}} {{{ item }}} {{% endfor %}}", profile: true)
     t.render!("collection" => ["one", "two"])
 
     assert_equal(1, t.profiler.length)
@@ -197,7 +197,7 @@ class ProfilerTest < Minitest::Test
   end
 
   def test_profiling_supports_self_time
-    t = Template.parse("{% for item in collection %} {{ item }} {% endfor %}", profile: true)
+    t = Template.parse("{{% for item in collection %}} {{{ item }}} {{% endfor %}}", profile: true)
     t.render!("collection" => ["one", "two"])
     leaf = t.profiler[0].children[0]
 
@@ -205,7 +205,7 @@ class ProfilerTest < Minitest::Test
   end
 
   def test_profiling_supports_total_time
-    t = Template.parse("{% if true %} {% increment test %} {{ test }} {% endif %}", profile: true)
+    t = Template.parse("{{% if true %}} {{% increment test %}} {{{ test }}} {{% endif %}}", profile: true)
     t.render!
 
     assert_operator(t.profiler[0].total_time, :>, 0)

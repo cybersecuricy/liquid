@@ -9,13 +9,13 @@ class ErrorHandlingTest < Minitest::Test
     template = <<-SOLID
       Hello,
 
-      {{ errors.standard_error }} will raise a standard error.
+      {{{ errors.standard_error }}} will raise a standard error.
 
       Bla bla test.
 
-      {{ errors.syntax_error }} will raise a syntax error.
+      {{{ errors.syntax_error }}} will raise a syntax error.
 
-      This is an argument error: {{ errors.argument_error }}
+      This is an argument error: {{{ errors.argument_error }}}
 
       Bla.
     SOLID
@@ -39,7 +39,7 @@ class ErrorHandlingTest < Minitest::Test
   end
 
   def test_standard_error
-    template = Solid::Template.parse(' {{ errors.standard_error }} ')
+    template = Solid::Template.parse(' {{{ errors.standard_error }}} ')
     assert_equal(' Solid error: standard error ', template.render('errors' => ErrorDrop.new))
 
     assert_equal(1, template.errors.size)
@@ -47,7 +47,7 @@ class ErrorHandlingTest < Minitest::Test
   end
 
   def test_syntax
-    template = Solid::Template.parse(' {{ errors.syntax_error }} ')
+    template = Solid::Template.parse(' {{{ errors.syntax_error }}} ')
     assert_equal(' Solid syntax error: syntax error ', template.render('errors' => ErrorDrop.new))
 
     assert_equal(1, template.errors.size)
@@ -55,7 +55,7 @@ class ErrorHandlingTest < Minitest::Test
   end
 
   def test_argument
-    template = Solid::Template.parse(' {{ errors.argument_error }} ')
+    template = Solid::Template.parse(' {{{ errors.argument_error }}} ')
     assert_equal(' Solid error: argument error ', template.render('errors' => ErrorDrop.new))
 
     assert_equal(1, template.errors.size)
@@ -64,20 +64,20 @@ class ErrorHandlingTest < Minitest::Test
 
   def test_missing_endtag_parse_time_error
     assert_raises(Solid::SyntaxError) do
-      Solid::Template.parse(' {% for a in b %} ... ')
+      Solid::Template.parse(' {{% for a in b %}} ... ')
     end
   end
 
   def test_unrecognized_operator
     with_error_mode(:strict) do
       assert_raises(SyntaxError) do
-        Solid::Template.parse(' {% if 1 =! 2 %}ok{% endif %} ')
+        Solid::Template.parse(' {{% if 1 =! 2 %}}ok{{% endif %}} ')
       end
     end
   end
 
   def test_lax_unrecognized_operator
-    template = Solid::Template.parse(' {% if 1 =! 2 %}ok{% endif %} ', error_mode: :lax)
+    template = Solid::Template.parse(' {{% if 1 =! 2 %}}ok{{% endif %}} ', error_mode: :lax)
     assert_equal(' Solid error: Unknown operator =! ', template.render)
     assert_equal(1, template.errors.size)
     assert_equal(Solid::ArgumentError, template.errors.first.class)
@@ -88,7 +88,7 @@ class ErrorHandlingTest < Minitest::Test
       Solid::Template.parse('
           foobar
 
-          {% "cat" | foobar %}
+          {{% "cat" | foobar %}}
 
           bla
         ',
@@ -103,7 +103,7 @@ class ErrorHandlingTest < Minitest::Test
       Solid::Template.parse('
           foobar
 
-          {%- "cat" | foobar -%}
+          {{%- "cat" | foobar -%}}
 
           bla
         ',
@@ -117,7 +117,7 @@ class ErrorHandlingTest < Minitest::Test
     template = Solid::Template.parse('
         foobar
 
-        {% if 1 =! 2 %}ok{% endif %}
+        {{% if 1 =! 2 %}}ok{{% endif %}}
 
         bla
             ',
@@ -133,7 +133,7 @@ class ErrorHandlingTest < Minitest::Test
       Solid::Template.parse('
           foobar
 
-          {% if 1 =! 2 %}ok{% endif %}
+          {{% if 1 =! 2 %}}ok{{% endif %}}
 
           bla
                 ',
@@ -149,9 +149,9 @@ class ErrorHandlingTest < Minitest::Test
       Solid::Template.parse('
           foobar
 
-          {% if 1 != 2 %}
-            {% foo %}
-          {% endif %}
+          {{% if 1 != 2 %}}
+            {{% foo %}}
+          {{% endif %}}
 
           bla
                 ',
@@ -163,30 +163,30 @@ class ErrorHandlingTest < Minitest::Test
 
   def test_strict_error_messages
     err = assert_raises(SyntaxError) do
-      Solid::Template.parse(' {% if 1 =! 2 %}ok{% endif %} ', error_mode: :strict)
+      Solid::Template.parse(' {{% if 1 =! 2 %}}ok{{% endif %}} ', error_mode: :strict)
     end
     assert_equal('Solid syntax error: Unexpected character = in "1 =! 2"', err.message)
 
     err = assert_raises(SyntaxError) do
-      Solid::Template.parse('{{%%%}}', error_mode: :strict)
+      Solid::Template.parse('{{{%%%}}}', error_mode: :strict)
     end
-    assert_equal('Solid syntax error: Unexpected character % in "{{%%%}}"', err.message)
+    assert_equal('Solid syntax error: Unexpected character % in "{{{%%%}}}"', err.message)
   end
 
   def test_warnings
-    template = Solid::Template.parse('{% if ~~~ %}{{%%%}}{% else %}{{ hello. }}{% endif %}', error_mode: :warn)
+    template = Solid::Template.parse('{{% if ~~~ %}}{{{%%%}}}{{% else %}}{{{ hello. }}}{{% endif %}}', error_mode: :warn)
     assert_equal(3, template.warnings.size)
     assert_equal('Unexpected character ~ in "~~~"', template.warnings[0].to_s(false))
-    assert_equal('Unexpected character % in "{{%%%}}"', template.warnings[1].to_s(false))
-    assert_equal('Expected id but found end_of_string in "{{ hello. }}"', template.warnings[2].to_s(false))
+    assert_equal('Unexpected character % in "{{{%%%}}}"', template.warnings[1].to_s(false))
+    assert_equal('Expected id but found end_of_string in "{{{ hello. }}}"', template.warnings[2].to_s(false))
     assert_equal('', template.render)
   end
 
   def test_warning_line_numbers
-    template = Solid::Template.parse("{% if ~~~ %}\n{{%%%}}{% else %}\n{{ hello. }}{% endif %}", error_mode: :warn, line_numbers: true)
+    template = Solid::Template.parse("{{% if ~~~ %}}\n{{{%%%}}}{{% else %}}\n{{{ hello. }}}{{% endif %}}", error_mode: :warn, line_numbers: true)
     assert_equal('Solid syntax error (line 1): Unexpected character ~ in "~~~"', template.warnings[0].message)
-    assert_equal('Solid syntax error (line 2): Unexpected character % in "{{%%%}}"', template.warnings[1].message)
-    assert_equal('Solid syntax error (line 3): Expected id but found end_of_string in "{{ hello. }}"', template.warnings[2].message)
+    assert_equal('Solid syntax error (line 2): Unexpected character % in "{{{%%%}}}"', template.warnings[1].message)
+    assert_equal('Solid syntax error (line 3): Expected id but found end_of_string in "{{{ hello. }}}"', template.warnings[2].message)
     assert_equal(3, template.warnings.size)
     assert_equal([1, 2, 3], template.warnings.map(&:line_number))
   end
@@ -194,13 +194,13 @@ class ErrorHandlingTest < Minitest::Test
   # Solid should not catch Exceptions that are not subclasses of StandardError, like Interrupt and NoMemoryError
   def test_exceptions_propagate
     assert_raises(Exception) do
-      template = Solid::Template.parse('{{ errors.exception }}')
+      template = Solid::Template.parse('{{{ errors.exception }}}')
       template.render('errors' => ErrorDrop.new)
     end
   end
 
   def test_default_exception_renderer_with_internal_error
-    template = Solid::Template.parse('This is a runtime error: {{ errors.runtime_error }}', line_numbers: true)
+    template = Solid::Template.parse('This is a runtime error: {{{ errors.runtime_error }}}', line_numbers: true)
 
     output = template.render('errors' => ErrorDrop.new)
 
@@ -215,7 +215,7 @@ class ErrorHandlingTest < Minitest::Test
       exceptions << e
       ''
     }
-    template = Solid::Template.parse('This is a runtime error: {{ errors.argument_error }}')
+    template = Solid::Template.parse('This is a runtime error: {{{ errors.argument_error }}}')
 
     output = template.render('errors' => ErrorDrop.new)
 
@@ -226,7 +226,7 @@ class ErrorHandlingTest < Minitest::Test
   end
 
   def test_exception_renderer_exposing_non_solid_error
-    template   = Solid::Template.parse('This is a runtime error: {{ errors.runtime_error }}', line_numbers: true)
+    template   = Solid::Template.parse('This is a runtime error: {{{ errors.runtime_error }}}', line_numbers: true)
     exceptions = []
     handler    = ->(e) {
       exceptions << e
@@ -243,7 +243,7 @@ class ErrorHandlingTest < Minitest::Test
 
   class TestFileSystem
     def read_template_file(_template_path)
-      "{{ errors.argument_error }}"
+      "{{{ errors.argument_error }}}"
     end
   end
 
@@ -253,7 +253,7 @@ class ErrorHandlingTest < Minitest::Test
     begin
       Solid::Template.file_system = TestFileSystem.new
 
-      template = Solid::Template.parse("Argument error:\n{% include 'product' %}", line_numbers: true)
+      template = Solid::Template.parse("Argument error:\n{{% include 'product' %}}", line_numbers: true)
       page     = template.render('errors' => ErrorDrop.new)
     ensure
       Solid::Template.file_system = old_file_system
@@ -263,10 +263,10 @@ class ErrorHandlingTest < Minitest::Test
   end
 
   def test_bug_compatible_silencing_of_errors_in_blank_nodes
-    output = Solid::Template.parse("{% assign x = 0 %}{% if 1 < '2' %}not blank{% assign x = 3 %}{% endif %}{{ x }}").render
+    output = Solid::Template.parse("{{% assign x = 0 %}}{{% if 1 < '2' %}}not blank{{% assign x = 3 %}}{{% endif %}}{{{ x }}}").render
     assert_equal("Solid error: comparison of Integer with String failed0", output)
 
-    output = Solid::Template.parse("{% assign x = 0 %}{% if 1 < '2' %}{% assign x = 3 %}{% endif %}{{ x }}").render
+    output = Solid::Template.parse("{{% assign x = 0 %}}{{% if 1 < '2' %}}{{% assign x = 3 %}}{{% endif %}}{{{ x }}}").render
     assert_equal("0", output)
   end
 end

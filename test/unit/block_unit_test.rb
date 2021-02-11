@@ -11,21 +11,21 @@ class BlockUnitTest < Minitest::Test
   end
 
   def test_variable_beginning
-    template = Solid::Template.parse("{{funk}}  ")
+    template = Solid::Template.parse("{{{funk}}}  ")
     assert_equal(2, template.root.nodelist.size)
     assert_equal(Variable, template.root.nodelist[0].class)
     assert_equal(String, template.root.nodelist[1].class)
   end
 
   def test_variable_end
-    template = Solid::Template.parse("  {{funk}}")
+    template = Solid::Template.parse("  {{{funk}}}")
     assert_equal(2, template.root.nodelist.size)
     assert_equal(String, template.root.nodelist[0].class)
     assert_equal(Variable, template.root.nodelist[1].class)
   end
 
   def test_variable_middle
-    template = Solid::Template.parse("  {{funk}}  ")
+    template = Solid::Template.parse("  {{{funk}}}  ")
     assert_equal(3, template.root.nodelist.size)
     assert_equal(String, template.root.nodelist[0].class)
     assert_equal(Variable, template.root.nodelist[1].class)
@@ -33,14 +33,14 @@ class BlockUnitTest < Minitest::Test
   end
 
   def test_variable_many_embedded_fragments
-    template = Solid::Template.parse("  {{funk}} {{so}} {{brother}} ")
+    template = Solid::Template.parse("  {{{funk}}} {{{so}}} {{{brother}}} ")
     assert_equal(7, template.root.nodelist.size)
     assert_equal([String, Variable, String, Variable, String, Variable, String],
       block_types(template.root.nodelist))
   end
 
   def test_with_block
-    template = Solid::Template.parse("  {% comment %} {% endcomment %} ")
+    template = Solid::Template.parse("  {{% comment %}} {{% endcomment %}} ")
     assert_equal([String, Comment, String], block_types(template.root.nodelist))
     assert_equal(3, template.root.nodelist.size)
   end

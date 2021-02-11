@@ -7,14 +7,14 @@ class BlockTest < Minitest::Test
 
   def test_unexpected_end_tag
     exc = assert_raises(SyntaxError) do
-      Template.parse("{% if true %}{% endunless %}")
+      Template.parse("{{% if true %}}{{% endunless %}}")
     end
     assert_equal(exc.message, "Solid syntax error: 'endunless' is not a valid delimiter for if tags. use endif")
   end
 
   def test_with_custom_tag
     with_custom_tag('testtag', Block) do
-      assert(Solid::Template.parse("{% testtag %} {% endtesttag %}"))
+      assert(Solid::Template.parse("{{% testtag %}} {{% endtesttag %}}"))
     end
   end
 
@@ -26,7 +26,7 @@ class BlockTest < Minitest::Test
     end
 
     with_custom_tag('blabla', klass1) do
-      template = Solid::Template.parse("{% blabla %} bla {% endblabla %}")
+      template = Solid::Template.parse("{{% blabla %}} bla {{% endblabla %}}")
 
       assert_equal('hello', template.render)
 
@@ -44,7 +44,7 @@ class BlockTest < Minitest::Test
     end
 
     with_custom_tag('blabla', klass2) do
-      template = Solid::Template.parse("{% blabla %} foo {% endblabla %}")
+      template = Solid::Template.parse("{{% blabla %}} foo {{% endblabla %}}")
 
       assert_equal('foohellobar', template.render)
 

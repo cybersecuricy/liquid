@@ -23,7 +23,7 @@ module Solid
       @variable.render_to_output_buffer(context, +'')
     end
 
-    class ParseTreeVisitor < Liquid::ParseTreeVisitor
+    class ParseTreeVisitor < Solid::ParseTreeVisitor
       def children
         [@node.variable]
       end

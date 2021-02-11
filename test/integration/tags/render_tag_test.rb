@@ -7,68 +7,68 @@ class RenderTagTest < Minitest::Test
 
   def test_render_with_no_arguments
     Solid::Template.file_system = StubFileSystem.new('source' => 'rendered content')
-    assert_template_result('rendered content', '{% render "source" %}')
+    assert_template_result('rendered content', '{{% render "source" %}}')
   end
 
   def test_render_tag_looks_for_file_system_in_registers_first
     file_system = StubFileSystem.new('pick_a_source' => 'from register file system')
     assert_equal('from register file system',
-      Template.parse('{% render "pick_a_source" %}').render!({}, registers: { file_system: file_system }))
+      Template.parse('{{% render "pick_a_source" %}}').render!({}, registers: { file_system: file_system }))
   end
 
   def test_render_passes_named_arguments_into_inner_scope
-    Solid::Template.file_system = StubFileSystem.new('product' => '{{ inner_product.title }}')
-    assert_template_result('My Product', '{% render "product", inner_product: outer_product %}',
+    Solid::Template.file_system = StubFileSystem.new('product' => '{{{ inner_product.title }}}')
+    assert_template_result('My Product', '{{% render "product", inner_product: outer_product %}}',
       'outer_product' => { 'title' => 'My Product' })
   end
 
   def test_render_accepts_literals_as_arguments
-    Solid::Template.file_system = StubFileSystem.new('snippet' => '{{ price }}')
-    assert_template_result('123', '{% render "snippet", price: 123 %}')
+    Solid::Template.file_system = StubFileSystem.new('snippet' => '{{{ price }}}')
+    assert_template_result('123', '{{% render "snippet", price: 123 %}}')
   end
 
   def test_render_accepts_multiple_named_arguments
-    Solid::Template.file_system = StubFileSystem.new('snippet' => '{{ one }} {{ two }}')
-    assert_template_result('1 2', '{% render "snippet", one: 1, two: 2 %}')
+    Solid::Template.file_system = StubFileSystem.new('snippet' => '{{{ one }}} {{{ two }}}')
+    assert_template_result('1 2', '{{% render "snippet", one: 1, two: 2 %}}')
   end
 
   def test_render_does_not_inherit_parent_scope_variables
-    Solid::Template.file_system = StubFileSystem.new('snippet' => '{{ outer_variable }}')
-    assert_template_result('', '{% assign outer_variable = "should not be visible" %}{% render "snippet" %}')
+    Solid::Template.file_system = StubFileSystem.new('snippet' => '{{{ outer_variable }}}')
+    assert_template_result('', '{{% assign outer_variable = "should not be visible" %}}{{% render "snippet" %}}')
   end
 
   def test_render_does_not_inherit_variable_with_same_name_as_snippet
-    Solid::Template.file_system = StubFileSystem.new('snippet' => '{{ snippet }}')
-    assert_template_result('', "{% assign snippet = 'should not be visible' %}{% render 'snippet' %}")
+    Solid::Template.file_system = StubFileSystem.new('snippet' => '{{{ snippet }}}')
+    assert_template_result('', "{{% assign snippet = 'should not be visible' %}}{{% render 'snippet' %}}")
   end
 
   def test_render_does_not_mutate_parent_scope
-    Solid::Template.file_system = StubFileSystem.new('snippet' => '{% assign inner = 1 %}')
-    assert_template_result('', "{% render 'snippet' %}{{ inner }}")
+    Solid::Template.file_system = StubFileSystem.new('snippet' => '{{% assign inner = 1 %}}')
+    assert_template_result('', "{{% render 'snippet' %}}{{{ inner }}}")
   end
 
   def test_nested_render_tag
     Solid::Template.file_system = StubFileSystem.new(
-      'one' => "one {% render 'two' %}",
+      'one' => "one {{% render 'two' %}}",
       'two' => 'two'
     )
-    assert_template_result('one two', "{% render 'one' %}")
+    assert_template_result('one two', "{{% render 'one' %}}")
   end
 
   def test_recursively_rendered_template_does_not_produce_endless_loop
-    Solid::Template.file_system = StubFileSystem.new('loop' => '{% render "loop" %}')
+    Solid::Template.file_system = StubFileSystem.new('loop' => '{{% render "loop" %}}')
 
     assert_raises(Solid::StackLevelError) do
-      Template.parse('{% render "loop" %}').render!
+      Template.parse('{{% render "loop" %}}').render!
     end
   end
 
   def test_sub_contexts_count_towards_the_same_recursion_limit
     Solid::Template.file_system = StubFileSystem.new(
-      'loop_render' => '{% render "loop_render" %}',
+      'loop_render' => '{{% render "loop_render" %}}',
     )
     assert_raises(Solid::StackLevelError) do
-      Template.parse('{% render "loop_render" %}').render!
+      Template.parse('{{% render "loop_render" %}}').render!
     end
   end
 
@@ -76,14 +76,14 @@ class RenderTagTest < Minitest::Test
     Solid::Template.file_system = StubFileSystem.new('snippet' => 'should not be rendered')
 
     assert_raises(Solid::SyntaxError) do
-      Solid::Template.parse("{% assign name = 'snippet' %}{% render name %}")
+      Solid::Template.parse("{{% assign name = 'snippet' %}}{{% render name %}}")
     end
   end
 
   def test_include_tag_caches_second_read_of_same_partial
     file_system = StubFileSystem.new('snippet' => 'echo')
     assert_equal('echoecho',
-      Template.parse('{% render "snippet" %}{% render "snippet" %}')
+      Template.parse('{{% render "snippet" %}}{{% render "snippet" %}}')
       .render!({}, registers: { file_system: file_system }))
     assert_equal(1, file_system.file_read_count)
   end
@@ -92,43 +92,43 @@ class RenderTagTest < Minitest::Test
     file_system = StubFileSystem.new('snippet' => 'my message')
 
     assert_equal('my message',
-      Template.parse('{% include "snippet" %}').render!({}, registers: { file_system: file_system }))
+      Template.parse('{{% include "snippet" %}}').render!({}, registers: { file_system: file_system }))
     assert_equal(1, file_system.file_read_count)
 
     assert_equal('my message',
-      Template.parse('{% include "snippet" %}').render!({}, registers: { file_system: file_system }))
+      Template.parse('{{% include "snippet" %}}').render!({}, registers: { file_system: file_system }))
     assert_equal(2, file_system.file_read_count)
   end
 
   def test_render_tag_within_if_statement
     Solid::Template.file_system = StubFileSystem.new('snippet' => 'my message')
-    assert_template_result('my message', '{% if true %}{% render "snippet" %}{% endif %}')
+    assert_template_result('my message', '{{% if true %}}{{% render "snippet" %}}{{% endif %}}')
   end
 
   def test_break_through_render
-    Solid::Template.file_system = StubFileSystem.new('break' => '{% break %}')
-    assert_template_result('1', '{% for i in (1..3) %}{{ i }}{% break %}{{ i }}{% endfor %}')
-    assert_template_result('112233', '{% for i in (1..3) %}{{ i }}{% render "break" %}{{ i }}{% endfor %}')
+    Solid::Template.file_system = StubFileSystem.new('break' => '{{% break %}}')
+    assert_template_result('1', '{{% for i in (1..3) %}}{{{ i }}}{{% break %}}{{{ i }}}{{% endfor %}}')
+    assert_template_result('112233', '{{% for i in (1..3) %}}{{{ i }}}{{% render "break" %}}{{{ i }}}{{% endfor %}}')
   end
 
   def test_increment_is_isolated_between_renders
-    Solid::Template.file_system = StubFileSystem.new('incr' => '{% increment %}')
-    assert_template_result('010', '{% increment %}{% increment %}{% render "incr" %}')
+    Solid::Template.file_system = StubFileSystem.new('incr' => '{{% increment %}}')
+    assert_template_result('010', '{{% increment %}}{{% increment %}}{{% render "incr" %}}')
   end
 
   def test_decrement_is_isolated_between_renders
-    Solid::Template.file_system = StubFileSystem.new('decr' => '{% decrement %}')
-    assert_template_result('-1-2-1', '{% decrement %}{% decrement %}{% render "decr" %}')
+    Solid::Template.file_system = StubFileSystem.new('decr' => '{{% decrement %}}')
+    assert_template_result('-1-2-1', '{{% decrement %}}{{% decrement %}}{{% render "decr" %}}')
   end
 
   def test_includes_will_not_render_inside_render_tag
     Solid::Template.file_system = StubFileSystem.new(
       'foo' => 'bar',
-      'test_include' => '{% include "foo" %}'
+      'test_include' => '{{% include "foo" %}}'
     )
 
     exc = assert_raises(Solid::DisabledError) do
-      Solid::Template.parse('{% render "test_include" %}').render!
+      Solid::Template.parse('{{% render "test_include" %}}').render!
     end
     assert_equal('Solid error: include usage is not allowed in this context', exc.message)
   end
@@ -136,78 +136,78 @@ class RenderTagTest < Minitest::Test
   def test_includes_will_not_render_inside_nested_sibling_tags
     Solid::Template.file_system = StubFileSystem.new(
       'foo' => 'bar',
-      'nested_render_with_sibling_include' => '{% render "test_include" %}{% include "foo" %}',
-      'test_include' => '{% include "foo" %}'
+      'nested_render_with_sibling_include' => '{{% render "test_include" %}}{{% include "foo" %}}',
+      'test_include' => '{{% include "foo" %}}'
     )
 
-    output = Solid::Template.parse('{% render "nested_render_with_sibling_include" %}').render
+    output = Solid::Template.parse('{{% render "nested_render_with_sibling_include" %}}').render
     assert_equal('Solid error: include usage is not allowed in this contextSolid error: include usage is not allowed in this context', output)
   end
 
   def test_render_tag_with
     Solid::Template.file_system = StubFileSystem.new(
-      'product' => "Product: {{ product.title }} ",
-      'product_alias' => "Product: {{ product.title }} ",
+      'product' => "Product: {{{ product.title }}} ",
+      'product_alias' => "Product: {{{ product.title }}} ",
     )
 
     assert_template_result("Product: Draft 151cm ",
-      "{% render 'product' with products[0] %}", "products" => [{ 'title' => 'Draft 151cm' }, { 'title' => 'Element 155cm' }])
+      "{{% render 'product' with products[0] %}}", "products" => [{ 'title' => 'Draft 151cm' }, { 'title' => 'Element 155cm' }])
   end
 
   def test_render_tag_with_alias
     Solid::Template.file_system = StubFileSystem.new(
-      'product' => "Product: {{ product.title }} ",
-      'product_alias' => "Product: {{ product.title }} ",
+      'product' => "Product: {{{ product.title }}} ",
+      'product_alias' => "Product: {{{ product.title }}} ",
     )
 
     assert_template_result("Product: Draft 151cm ",
-      "{% render 'product_alias' with products[0] as product %}", "products" => [{ 'title' => 'Draft 151cm' }, { 'title' => 'Element 155cm' }])
+      "{{% render 'product_alias' with products[0] as product %}}", "products" => [{ 'title' => 'Draft 151cm' }, { 'title' => 'Element 155cm' }])
   end
 
   def test_render_tag_for_alias
     Solid::Template.file_system = StubFileSystem.new(
-      'product' => "Product: {{ product.title }} ",
-      'product_alias' => "Product: {{ product.title }} ",
+      'product' => "Product: {{{ product.title }}} ",
+      'product_alias' => "Product: {{{ product.title }}} ",
     )
 
     assert_template_result("Product: Draft 151cm Product: Element 155cm ",
-      "{% render 'product_alias' for products as product %}", "products" => [{ 'title' => 'Draft 151cm' }, { 'title' => 'Element 155cm' }])
+      "{{% render 'product_alias' for products as product %}}", "products" => [{ 'title' => 'Draft 151cm' }, { 'title' => 'Element 155cm' }])
   end
 
   def test_render_tag_for
     Solid::Template.file_system = StubFileSystem.new(
-      'product' => "Product: {{ product.title }} ",
-      'product_alias' => "Product: {{ product.title }} ",
+      'product' => "Product: {{{ product.title }}} ",
+      'product_alias' => "Product: {{{ product.title }}} ",
     )
 
     assert_template_result("Product: Draft 151cm Product: Element 155cm ",
-      "{% render 'product' for products %}", "products" => [{ 'title' => 'Draft 151cm' }, { 'title' => 'Element 155cm' }])
+      "{{% render 'product' for products %}}", "products" => [{ 'title' => 'Draft 151cm' }, { 'title' => 'Element 155cm' }])
   end
 
   def test_render_tag_forloop
     Solid::Template.file_system = StubFileSystem.new(
-      'product' => "Product: {{ product.title }} {% if forloop.first %}first{% endif %} {% if forloop.last %}last{% endif %} index:{{ forloop.index }} ",
+      'product' => "Product: {{{ product.title }}} {{% if forloop.first %}}first{{% endif %}} {{% if forloop.last %}}last{{% endif %}} index:{{{ forloop.index }}} ",
     )
 
     assert_template_result("Product: Draft 151cm first  index:1 Product: Element 155cm  last index:2 ",
-      "{% render 'product' for products %}", "products" => [{ 'title' => 'Draft 151cm' }, { 'title' => 'Element 155cm' }])
+      "{{% render 'product' for products %}}", "products" => [{ 'title' => 'Draft 151cm' }, { 'title' => 'Element 155cm' }])
   end
 
   def test_render_tag_for_drop
     Solid::Template.file_system = StubFileSystem.new(
-      'loop' => "{{ value.foo }}",
+      'loop' => "{{{ value.foo }}}",
     )
 
     assert_template_result("123",
-      "{% render 'loop' for loop as value %}", "loop" => TestEnumerable.new)
+      "{{% render 'loop' for loop as value %}}", "loop" => TestEnumerable.new)
   end
 
   def test_render_tag_with_drop
     Solid::Template.file_system = StubFileSystem.new(
-      'loop' => "{{ value }}",
+      'loop' => "{{{ value }}}",
     )
 
     assert_template_result("TestEnumerable",
-      "{% render 'loop' with loop as value %}", "loop" => TestEnumerable.new)
+      "{{% render 'loop' with loop as value %}}", "loop" => TestEnumerable.new)
   end
 end

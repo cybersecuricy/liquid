@@ -9,7 +9,7 @@ class ContinueTagTest < Minitest::Test
   # block
   def test_continue_with_no_block
     assigns  = {}
-    markup   = '{% continue %}'
+    markup   = '{{% continue %}}'
     expected = ''
 
     assert_template_result(expected, markup, assigns)

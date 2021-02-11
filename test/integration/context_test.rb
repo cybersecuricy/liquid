@@ -560,7 +560,7 @@ class ContextTest < Minitest::Test
     super_context = Context.new
     super_context.add_filters([my_filter])
     subcontext    = super_context.new_isolated_subcontext
-    template      = Template.parse('{{ 123 | my_filter }}')
+    template      = Template.parse('{{{ 123 | my_filter }}}')
     assert_equal('my filter result', template.render(subcontext))
   end
 
@@ -607,8 +607,8 @@ class ContextTest < Minitest::Test
     end
 
     with_global_filter(global) do
-      assert_equal('Global test', Template.parse("{{'test' | notice }}").render!)
-      assert_equal('Local test', Template.parse("{{'test' | notice }}").render!({}, filters: [local]))
+      assert_equal('Global test', Template.parse("{{{'test' | notice }}}").render!)
+      assert_equal('Local test', Template.parse("{{{'test' | notice }}}").render!({}, filters: [local]))
     end
   end
 

@@ -8,8 +8,8 @@ module Solid
     FullToken           = /\A#{TagStart}#{WhitespaceControl}?(\s*)(\w+)(\s*)(.*?)#{WhitespaceControl}?#{TagEnd}\z/om
     ContentOfVariable   = /\A#{VariableStart}#{WhitespaceControl}?(.*?)#{WhitespaceControl}?#{VariableEnd}\z/om
     WhitespaceOrNothing = /\A\s*\z/
-    TAGSTART            = "{%"
-    VARSTART            = "{{"
+    TAGSTART            = "{{%"
+    VARSTART            = "{{{"
 
     attr_reader :nodelist
 
@@ -62,7 +62,7 @@ module Solid
 
     # @api private
     def self.unknown_tag_in_solid_tag(tag, parse_context)
-      Block.raise_unknown_tag(tag, 'solid', '%}', parse_context)
+      Block.raise_unknown_tag(tag, 'solid', '%}}', parse_context)
     end
 
     # @api private
@@ -159,7 +159,7 @@ module Solid
     end
 
     def whitespace_handler(token, parse_context)
-      if token[2] == WhitespaceControl
+      if token[3] == WhitespaceControl
         previous_token = @nodelist.last
         if previous_token.is_a?(String)
           first_byte = previous_token.getbyte(0)
@@ -169,7 +169,7 @@ module Solid
           end
         end
       end
-      parse_context.trim_whitespace = (token[-3] == WhitespaceControl)
+      parse_context.trim_whitespace = (token[-4] == WhitespaceControl)
     end
 
     def blank?

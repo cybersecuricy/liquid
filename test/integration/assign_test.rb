@@ -7,8 +7,8 @@ class AssignTest < Minitest::Test
 
   def test_assign_with_hyphen_in_variable_name
     template_source = <<-END_TEMPLATE
-    {% assign this-thing = 'Print this-thing' %}
-    {{ this-thing }}
+    {{% assign this-thing = 'Print this-thing' %}}
+    {{{ this-thing }}}
     END_TEMPLATE
     template        = Template.parse(template_source)
     rendered        = template.render!
@@ -17,44 +17,44 @@ class AssignTest < Minitest::Test
 
   def test_assigned_variable
     assert_template_result('.foo.',
-      '{% assign foo = values %}.{{ foo[0] }}.',
+      '{{% assign foo = values %}}.{{{ foo[0] }}}.',
       'values' => %w(foo bar baz))
 
     assert_template_result('.bar.',
-      '{% assign foo = values %}.{{ foo[1] }}.',
+      '{{% assign foo = values %}}.{{{ foo[1] }}}.',
       'values' => %w(foo bar baz))
   end
 
   def test_assign_with_filter
     assert_template_result('.bar.',
-      '{% assign foo = values | split: "," %}.{{ foo[1] }}.',
+      '{{% assign foo = values | split: "," %}}.{{{ foo[1] }}}.',
       'values' => "foo,bar,baz")
   end
 
   def test_assign_syntax_error
     assert_match_syntax_error(/assign/,
-      '{% assign foo not values %}.',
+      '{{% assign foo not values %}}.',
       'values' => "foo,bar,baz")
   end
 
   def test_assign_uses_error_mode
     with_error_mode(:strict) do
       assert_raises(SyntaxError) do
-        Template.parse("{% assign foo = ('X' | downcase) %}")
+        Template.parse("{{% assign foo = ('X' | downcase) %}}")
       end
     end
     with_error_mode(:lax) do
-      assert(Template.parse("{% assign foo = ('X' | downcase) %}"))
+      assert(Template.parse("{{% assign foo = ('X' | downcase) %}}"))
     end
   end
 
   def test_expression_with_whitespace_in_square_brackets
-    source = "{% assign r = a[ 'b' ] %}{{ r }}"
+    source = "{{% assign r = a[ 'b' ] %}}{{{ r }}}"
     assert_template_result('result', source, 'a' => { 'b' => 'result' })
   end
 
   def test_assign_score_exceeding_resource_limit
-    t = Template.parse("{% assign foo = 42 %}{% assign bar = 23 %}")
+    t = Template.parse("{{% assign foo = 42 %}}{{% assign bar = 23 %}}")
     t.resource_limits.assign_score_limit = 1
     assert_equal("Solid error: Memory limits exceeded", t.render)
     assert(t.resource_limits.reached?)
@@ -65,7 +65,7 @@ class AssignTest < Minitest::Test
   end
 
   def test_assign_score_exceeding_limit_from_composite_object
-    t = Template.parse("{% assign foo = 'aaaa' | reverse %}")
+    t = Template.parse("{{% assign foo = 'aaaa' | reverse %}}")
 
     t.resource_limits.assign_score_limit = 3
     assert_equal("Solid error: Memory limits exceeded", t.render)
@@ -111,7 +111,7 @@ class AssignTest < Minitest::Test
 
   def assign_score_of(obj)
     context = Solid::Context.new('drop' => ObjectWrapperDrop.new(obj))
-    Solid::Template.parse('{% assign obj = drop.value %}').render!(context)
+    Solid::Template.parse('{{% assign obj = drop.value %}}').render!(context)
     context.resource_limits.assign_score
   end
 end

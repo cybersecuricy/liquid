@@ -32,7 +32,7 @@ class TagDisableableTest < Minitest::Test
   def test_block_tag_disabling_nested_tag
     with_disableable_tags do
       with_custom_tag('disable', DisableCustom) do
-        output = Template.parse('{% disable %}{% custom %};{% custom2 %}{% enddisable %}').render
+        output = Template.parse('{{% disable %}}{{% custom %}};{{% custom2 %}}{{% enddisable %}}').render
         assert_equal('Solid error: custom usage is not allowed in this context;custom2', output)
       end
     end
@@ -41,7 +41,7 @@ class TagDisableableTest < Minitest::Test
   def test_block_tag_disabling_multiple_nested_tags
     with_disableable_tags do
       with_custom_tag('disable', DisableBoth) do
-        output = Template.parse('{% disable %}{% custom %};{% custom2 %}{% enddisable %}').render
+        output = Template.parse('{{% disable %}}{{% custom %}};{{% custom2 %}}{{% enddisable %}}').render
         assert_equal('Solid error: custom usage is not allowed in this context;Solid error: custom2 usage is not allowed in this context', output)
       end
     end
